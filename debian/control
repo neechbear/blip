@@ -1,0 +1,15 @@
+Source: blip
+Maintainer: Nicola Worthington <nicolaw@tfb.net>
+Section: devel
+Priority: optional
+Standards-Version: 3.9.5
+Build-Depends: debhelper (>= 9), bc, grep, coreutils, curl, util-linux
+Vcs-Git: https://github.com:neechbear/blip.git
+Vcs-Browser: https://github.com/neechbear/blip/
+Homepage: https://nicolaw.uk/blip
+
+Package: blip
+Architecture: all
+Depends: ${shlibs:Depends}, ${misc:Depends}, bc, grep, coreutils, curl
+Recommends: util-linux
+Description: Bash Library for Indolent Programmers

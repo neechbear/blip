@@ -1,0 +1,22 @@
+---
+engines:
+  shellcheck:
+    enabled: true
+    checks:
+      SC1090:
+        enabled: false
+      SC2102:
+        enabled: false
+  fixme:
+    enabled: true
+  markdownlint:
+    enabled: true
+ratings:
+  paths:
+  - "**.bash"
+  - "**.sh"
+  - "**.md"
+exclude_paths:
+  - release/
+  - build/
+  - tests/assert.sh

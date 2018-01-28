@@ -1,0 +1,5 @@
+This is obviously not an IP prefix of any kind!
+::ffff:a.b.c.d/96
+::1/129
+::1/-1
+be::ef::1/3

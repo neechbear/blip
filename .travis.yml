@@ -1,0 +1,14 @@
+---
+language: bash
+script: ./build.sh
+dist: trusty
+os: linux
+addons:
+  code_climate:
+    repo_token: b4c0b8955b518d209f21f289dd3220e91c4af2c4fa191fd2e5c113fc18891103
+sudo: required
+before_install:
+    - sudo apt-add-repository "deb http://archive.ubuntu.com/ubuntu trusty-backports main restricted universe multiverse"
+    - sudo apt-get -qq update
+    - sudo apt-get -t trusty-backports install shellcheck build-essential rpm devscripts debhelper bc grep coreutils curl util-linux
+    - sudo pip install bashate

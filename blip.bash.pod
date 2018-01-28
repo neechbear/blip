@@ -1,0 +1,425 @@
+=encoding utf8
+
+=head1 NAME
+
+blip.bash - Bash Library for Indolent Programmers
+
+=head1 SYNOPSIS
+
+ #!/bin/bash
+ 
+ set -euo pipefail
+ source /usr/lib/blip.bash
+ 
+ main () {
+     local name="$(get_gecos_name)"
+     if get_user_confirmation "Is your name ${name:-(unknown)}?" ; then
+         echo "Nice to meet you ${name:-mystery user}."
+     else
+         echo "I'll just call you $(get_username) then."
+     fi
+ }
+ 
+ main "$@"
+
+=head1 DESCRIPTION
+
+B<blip> is a Bash Library for Indolent (lazy) Programmers. It is a bash script that
+is intended to be sourced in as a library of common functions to aid development
+of shell scripts.
+
+This project is still in the early stages of development and is expected to
+change. However, with the mantra release early, release often, in mind, it
+is available in this early state to help solicit feedback and user input.
+
+Please feel free to contact the author or offer patches to the source.
+
+=head1 FUNCTIONS
+
+=head2 abs ()
+
+=head2 absolute ()
+
+Alias for C<abs ()>.
+
+=head2 is_mac_address ()
+
+=head2 is_eui48_address ()
+
+=head2 is_eui64_address ()
+
+=head2 read_config_file ()
+
+=head2 trim ()
+
+=head2 is_newer_version ()
+
+=head2 required_command_version ()
+
+=head2 append_trap "$ACTION" "$SIGNALn" ...
+
+=head2 execute_trap_stack "$SIGNAL"
+
+=head2 get_trap_stack "$SIGNALn" ...
+
+=head2 pop_trap_stack "$SIGNALn" ...
+
+=head2 push_trap_stack "$ACTION" "$SIGNALn" ...
+
+=head2 set_trap_stack "$ACTION" "$SIGNALn" ...
+
+=head2 unset_trap_stack "$SIGNALn" ...
+
+=head2 append_if_not_present ()
+
+=head2 get_pid_lock_filename "$LOCK_DIR" "$PID_FILENAME"
+
+=head2 get_exclusive_execution_lock ()
+
+=head2 get_date ()
+
+=head2 get_file_age "$FILE"
+
+=head2 get_free_disk_space "$FILESYSTEM"
+
+=head2 get_fs_mounts ()
+
+=head2 get_gecos_info ()
+
+=head2 get_gecos_name ()
+
+=head2 get_user_shell ()
+
+=head2 get_max_length ()
+
+=head2 get_string_characters ()
+
+=head2 get_unixtime ()
+
+=head2 get_user_confirmation ()
+
+See also: C<select> bash built-in.
+
+=head2 get_username ()
+
+=head2 get_user_selection ()
+
+See also: C<select> bash built-in.
+
+=head2 as_json_string ()
+
+=head2 as_json_value ()
+
+=head2 get_variable_type ()
+
+=head2 vars_as_json ()
+
+=head2 is_abs_int ()
+
+=head2 is_absolute_integer ()
+
+Alias for C<is_abs_int ()>.
+
+=head2 is_boolean ()
+
+=head2 is_false "$ARG1"
+
+Return C<0> I<true> if C<$ARG1> may be considered boolean false by a
+human. Values to be considered true include: C<0>, C<false>, C<no>, C<off>,
+C<disable> and C<disabled>.
+
+=head2 is_in_path "$CMDn" ...
+
+=head2 is_float "$ARG1"
+
+Return C<0> I<true> if C<$ARG1> is a floating-point value.
+
+=head2 is_int "$ARG1"
+
+Return C<0> I<true> if C<$ARG1> is an integer value.
+
+=head2 is_integer "$ARG1"
+
+Alias for C<is_int ()>.
+
+=head2 is_zero "$ARG1"
+
+=head2 is_negative "$ARG1"
+
+=head2 is_positive "$ARG1"
+
+=head2 is_true "$ARG1"
+
+Return C<0> I<true> if C<$ARG1> may be considered boolean true by a
+human. Values to be considered true include: C<1>, C<true>, C<yes>, C<on>,
+C<enable> and C<enabled>.
+
+=head2 is_word_in_string "$STR1" "$WORD1"
+
+=head2 to_lower "$ARGn" ...
+
+=head2 to_upper "$ARGn" ...
+
+=head2 url_exists "$URL"
+
+Return C<0> I<(true)> if C<$URL> exists, as determined by a 2XX HTTP response
+code. Otherwise returns C<1> I<(false)>.
+Requires the C<curl> command to be present in the shell search path.
+
+=head2 url_http_header "$URL"
+
+Outputs (echos to C<STDOUT>) the full HTTP response headers returned by the remote
+web server for C<$URL>.
+Requires the C<curl> command to be present in the shell search path.
+
+=head2 url_http_response "$URL"
+
+Outputs (echos to C<STDOUT>) the HTTP response code (including textual 
+description) returned by the remote web server for C<$URL>. Follows HTTP
+redirects using C<curl>'s C<-L> flag, returning only the last HTTP response
+code.
+
+Requires the C<curl> command to be present in the shell search path.
+
+=head2 url_http_response_code "$URL"
+
+Similar to C<url_http_response>, except the textual description is omitted,
+outputting only the numerical value.
+
+=head2 cmdarg_info "$TYPE" "$ARGn" ...
+
+See L<#COMMAND LINE ARGUMENT PARSING>.
+
+=head2 cmdarg "$FLAG" "$LONGOPT" "$DEFALT" "$VALIDATOR"
+
+See L<#COMMAND LINE ARGUMENT PARSING>.
+
+=head2 cmdarg_parse "$@"
+
+See L<#COMMAND LINE ARGUMENT PARSING>.
+
+=head2 cmdarg_usage ()
+
+See L<#COMMAND LINE ARGUMENT PARSING>.
+
+=head2 cmdarg_describe "$FLAG"
+
+See L<#COMMAND LINE ARGUMENT PARSING>.
+
+=head2 cmdarg_purge ()
+
+See L<#COMMAND LINE ARGUMENT PARSING>.
+
+=head2 cmdarg_check_empty "$FLAG"
+
+Used internally by command line argument parsing (C<cmdarg_parse()> function),
+not usually expected to be used directly. See L<#COMMAND LINE ARGUMENT PARSING>.
+
+=head2 cmdarg_describe_default ...
+
+Used internally by command line argument parsing (C<cmdarg_describe()>
+function), not usually expected to be used directly. See
+L<#COMMAND LINE ARGUMENT PARSING>.
+
+=head2 cmdarg_set_opt "$LONGOPT" "$VALUE"
+
+Used internally by command line argument parsing (C<cmdarg_parse()> function),
+not usually expected to be used directly. See L<#COMMAND LINE ARGUMENT PARSING>.
+
+=head2 cmdarg_validate ...
+
+Used internally by command line argument parsing (C<cmdarg_set_opt()> function),
+not usually expected to be used directly. See L<#COMMAND LINE ARGUMENT PARSING>.
+
+=head1 COMMAND LINE ARGUMENT PARSING
+
+See also L<CMDARG.md>
+(L<https://github.com/neechbear/blip/blob/master/CMDARG.md>).
+
+=head1 VARIABLES
+
+=head2 BLIP_VERSION
+
+Contains the version of B<blip> as a string value.
+
+Example: C<0.01-3-prerelease>
+
+=head2 BLIP_VERSINFO
+
+A 4-element array containing version information about the version of B<blip>.
+
+Example:
+
+ BLIP_VERSINFO[0] = 0          # Major version number
+ BLIP_VERSINFO[1] = 01         # Minor version number
+ BLIP_VERSINFO[2] = 3          # Patch / release number
+ BLIP_VERSINFO[3] = prerelease # Release status
+
+=head2 BLIP_START_UNIXTIME
+
+=head2 BLIP_TRAP_MAP
+
+=head2 BLIP_TRAP_STACK
+
+=head2 ANSI, & ANSI_*
+
+These variables contain common ANSI terminal colour codes.
+
+A list of all keys within the C<ANSI> associative array may be obtained
+through the following code example:
+
+ BLIP_ANSI_VARIABLES=1
+ source /usr/lib/blip.bash
+ echo "${!ANSI[@]}"
+
+See also L<#BLIP_ANSI_VARIABLES> in the L<#ENVIRONMENT> section below.
+
+=head2 cmdarg_cfg
+
+See L<#COMMAND LINE ARGUMENT PARSING>.
+
+=head2 cmdarg_argv
+
+See L<#COMMAND LINE ARGUMENT PARSING>.
+
+=head2 cmdarg_helpers
+
+See L<#COMMAND LINE ARGUMENT PARSING>.
+
+=head2 CMDARG, CMDARG_*
+
+The following variables are used internally by the command line argument
+parsing: C<CMDARG>, C<CMDARG_REV>, C<CMDARG_OPTIONAL>, C<CMDARG_REQUIRED>,
+C<CMDARG_DESC>, C<CMDARG_DEFAULT>, C<CMDARG_VALIDATORS>, C<CMDARG_INFO>,
+C<CMDARG_FLAGS>, C<CMDARG_TYPES>.
+
+These variables are not intended to be read or modified directly.
+
+See L<#COMMAND LINE ARGUMENT PARSING>.
+
+=head1 ENVIRONMENT
+
+=head2 BLIP_DEBUG_LOGLEVEL
+
+=head2 BLIP_ALLOW_FOREIGN_SHELLS
+
+When set to C<1>, inhibits C<exit> functionality to abort operation
+when B<blip> determines that it is not running inside a bash shell interpreter.
+
+See also L<#BLIP_INTERNAL_FATAL_ACTION>.
+
+=head2 BLIP_INTERNAL_FATAL_ACTION
+
+Specifies the command to execute when C<blip> encounters a fatal internal
+condition such as being called by an incompatible foreign shell, or not meeting
+the minimum version requirements set by the C<BLIP_REQUIRE_VERSION> variable.
+
+Defaults to C<exit 2>.
+
+See also: L<#BLIP_REQUIRE_VERSION>.
+
+=head2 BLIP_REQUIRE_VERSION
+
+Specifies the minimum version of B<blip> required by the calling parent script.
+B<blip> will C<exit> with a non-zero (C<2>) return code if the
+C<${BLIP_VERSINFO[@]}> array does not indicate a version that is equal to
+or greater.
+
+Example:
+
+ BLIP_REQUIRE_VERSION="0.02-13"
+ source /usr/lib/blip.bash
+
+=head2 BLIP_ANSI_VARIABLES
+
+When set to C<1>, causes B<blip> to declare read-only variables containing
+common ANSI terminal colour codes. All declared variable names being with
+the prefix C<ANSI_>, with the excption of one associative array which is
+simply C<ANSI>.
+
+A list of all declared ANSI variables may be obtained through the following
+code example:
+
+ BLIP_ANSI_VARIABLES=1
+ source /usr/lib/blip.bash
+ compgen -A variable | grep ANSI
+
+See also: L<https://en.wikipedia.org/wiki/ANSI_escape_code>.
+
+=head2 BLIP_EXTERNAL_CMD_FLOCK
+
+Specifies an explicit command path when executing the external dependency
+command C<flock>. Defaults to C<flock> without an explicit path in order to
+search C<$PATH>.
+
+=head2 BLIP_EXTERNAL_CMD_STAT
+
+Specifies an explicit command path when executing the external dependency
+command C<stat>. Defaults to C<stat> without an explicit path in order to
+search C<$PATH>.
+
+=head2 BLIP_EXTERNAL_CMD_BC
+
+Specifies an explicit command path when executing the external dependency
+command C<bc>. Defaults to C<bc> without an explicit path in order to
+search C<$PATH>.
+
+=head2 BLIP_EXTERNAL_CMD_CURL
+
+Specifies an explicit command path when executing the external dependency
+command C<curl>. Defaults to C<curl> without an explicit path in order to
+search C<$PATH>.
+
+=head2 BLIP_EXTERNAL_CMD_DATE
+
+Specifies an explicit command path when executing the external dependency
+command C<date>. Defaults to C<date> without an explicit path in order to
+search C<$PATH>.
+
+=head2 BLIP_EXTERNAL_CMD_GREP
+
+Specifies an explicit command path when executing the external dependency
+command C<grep>. Defaults to C<grep> without an explicit path in order to
+search C<$PATH>.
+
+=head1 AUTHOR
+
+Nicola Worthington <nicola@tfb.net>.
+
+=head1 URLS
+
+L<https://nicolaw.uk/blip>, L<https://github.com/neechbear/blip/>
+
+=head1 SEE ALSO
+
+/usr/share/doc/blip, bash(1).
+
+=head1 COPYRIGHT
+
+Copyright (c) 2016,2017 Nicola Worthington <nicolaw@tfb.net>.
+With contributions from Sergej Alikov, 2016.
+
+Command line argument parsing functionality is adapted from the C<cmdarg.sh>
+library (L<https://github.com/akesterson/cmdarg>), which is written by and
+Copyright (c) 2013 Andrew Kesterson <andrew@aklabs.net>.
+
+This software is released under the MIT License.
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+
