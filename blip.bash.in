@@ -15,7 +15,7 @@
 #
 # MIT License
 #
-# Copyright (c) 2016, 2017 Nicola Worthington <nicolaw@tfb.net>.
+# Copyright (c) 2016, 2017, 2018 Nicola Worthington <nicolaw@tfb.net>.
 # With contributions from Sergej Alikov <sergej.alikov@gmail.com>, 2016.
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -1403,19 +1403,23 @@ cmdarg_parse () {
     fi
 
     if [[ $is_equals_arg -eq 1 ]]; then
-      if [[ ${CMDARG_FLAGS[$opt]:-} -eq ${CMDARG_FLAG_REQARG} || \
-            ${CMDARG_FLAGS[$opt]:-} -eq ${CMDARG_FLAG_OPTARG} ]]; then
+      if   [[ -n "$opt" ]] \
+        && [[ ${CMDARG_FLAGS[$opt]:-} -eq ${CMDARG_FLAG_REQARG}
+           || ${CMDARG_FLAGS[$opt]:-} -eq ${CMDARG_FLAG_OPTARG} ]]; then
         optarg="${1:-}"
         shift || true
       fi
     fi
 
-    if [[ -n "${CMDARG[$opt]:+abc}" ]]; then
+    if [[ -n "$opt" && -n "${CMDARG[$opt]:+abc}" ]]; then
       cmdarg_set_opt "${CMDARG[$opt]:-}" "$optarg"
       declare rc=$?
       failed=$(( failed + rc ))
     else
-      echo "Unknown argument or invalid value : -${opt} | --${longopt}" >&2
+      declare -a invalid=()
+      if [[ -n "$opt" ]]; then invalid+=("-$opt"); fi
+      if [[ -n "$longopt" ]]; then invalid+=("--$longopt"); fi
+      (IFS=" | "; echo "Unknown argument or invalid value : ${invalid[*]}" >&2)
       failed+=1
     fi
   done

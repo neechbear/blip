@@ -1,7 +1,7 @@
 #
 # MIT License
 #
-# Copyright (c) 2016, 2017 Nicola Worthington <nicolaw@tfb.net>.
+# Copyright (c) 2016, 2017, 2018 Nicola Worthington <nicolaw@tfb.net>.
 #
 
 prefix = /usr/local

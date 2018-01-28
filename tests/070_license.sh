@@ -4,7 +4,7 @@ test_070_license () {
     declare -x base="${BASH_SOURCE[0]%/*}/../"
     declare -ax strings=(
             "MIT License"
-            "Copyright (c) 2016, 2017 Nicola Worthington"
+            "Copyright (c) 2016, 2017, 2018 Nicola Worthington"
             )
     for file in blip.bash LICENSE debian/copyright Makefile
     do
