@@ -844,6 +844,15 @@ get_fs_mounts () {
   done < /proc/mounts
 }
 
+# FIXME: Check out what is failing in unit tests that call this function when we
+#        are checking the age of a file that does not exist. Is it the unittest
+#        that is broken, or blip itslef?
+# tests/../blip.bash: line 852: 1517188838 -  : syntax error: operand expected (error token is "-  ")
+# test #78 "echo 1" failed:
+#   expected "0"
+#     got "1"
+#    1 of 79 050_documentation.sh tests failed in 0.160s.
+
 # %w %W  time of file birth; - or 0 if unknown (creation)
 # %x %X  time of last access, human-readable (read)
 # %y %Y  time of last modification, human-readable (content)

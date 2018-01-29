@@ -8,30 +8,35 @@ SHELL = /bin/sh
 SED = sed
 GPG = gpg
 GREP = grep
+TAR = tar
 
-name = blip
-version = 99.99
-release = 1
+makefile := $(abspath $(lastword $(MAKEFILE_LIST)))
+#srcdir := $(notdir $(patsubst %/,%,$(dir $(makefile))))
+srcdir := $(dir $(makefile))
+builddir := $(srcdir)/build
+
+name := blip
 gpgkeyid = "6393F646"
 gpgname = "Nicola Worthington"
+LIBNAME := $(name).bash
 
-gpgsign = $(shell $(GPG) --list-secret-keys | $(GREP) $(gpgkeyid) >/dev/null 2>&1 && echo true)
-vcsshortref = $(shell git rev-parse --short=7 HEAD)
-versionminor = $(word 1, $(subst ., ,$(version)))
-versionmajor = $(word 2, $(subst ., ,$(version)))
+# Read the version from blip.bash (if we've from a distribution archive),
+# otherwise try and extract it from VCS tags using gitversion.sh (which is not
+# distributed).
+version := $(shell bash -c '{ source $(srcdir)/$(LIBNAME) && echo "$${BLIP_VERSINFO[0]}.$${BLIP_VERSINFO[1]}"; } 2>/dev/null || { eval $$($(srcdir)/gitversion.sh) && echo "$$VERSION_MAJOR.$$VERSION_MINOR"; }')
+release := $(shell bash -c '{ source $(srcdir)/$(LIBNAME) && echo "$${BLIP_VERSINFO[2]}"; } 2>/dev/null || { eval $$($(srcdir)/gitversion.sh) && echo "$$VERSION_RELEASE"; }')
+
+gpgsign := $(shell $(GPG) --list-secret-keys | $(GREP) $(gpgkeyid) >/dev/null 2>&1 && echo true)
+vcsshortref := $(shell git rev-parse --short=7 HEAD)
+versionmajor := $(word 1, $(subst ., ,$(version)))
+versionminor := $(word 2, $(subst ., ,$(version)))
 dirty = 
 
-LIBNAME = $(name).bash
-DISTRPM = $(name)-$(version)$(dirty).noarch.rpm
-DISTDEB = $(name)-$(version)$(dirty).all.deb
-DISTTAR = $(name)-$(version)$(dirty).tar.gz
+DISTRPM := $(name)-$(version)$(dirty).noarch.rpm
+DISTDEB := $(name)-$(version)$(dirty).all.deb
+DISTTAR := $(name)-$(version)$(dirty).tar.gz
 
-makefile =  $(abspath $(lastword $(MAKEFILE_LIST)))
-#srcdir = $(notdir $(patsubst %/,%,$(dir $(makefile))))
-srcdir = $(dir $(makefile))
-builddir = $(srcdir)/build
-
-TARGETS = $(LIBNAME) $(name).bash.3 $(name).spec README.html debian/changelog
+TARGETS := $(LIBNAME) $(name).bash.3 $(name).spec README.html debian/changelog
 
 prefix = /usr/local
 bindir = $(prefix)/bin
@@ -50,8 +55,8 @@ distclean:
 	$(RM) $(DISTTAR) $(DISTDEB) $(DISTRPM)
 
 dist: $(DISTTAR)
-$(DISTTAR): $(TARGETS) Makefile CONTRIBUTORS RPM-GPG-KEY-nicolaw LICENSE $(wildcard *.pod) $(wildcard *.md) $(wildcard debian/*)
-	tar -zcvf $@ $^
+$(DISTTAR): $(TARGETS)
+	$(TAR) -zcf $@ $^ Makefile CONTRIBUTORS RPM-GPG-KEY-nicolaw LICENSE *.pod *.md debian/ examples/ tests/
 
 $(builddir):
 	mkdir $(builddir)
@@ -98,7 +103,7 @@ $(DISTRPM): $(name).spec $(DISTTAR)
 		--define "_build_name_fmt %%{NAME}-%%{VERSION}-%%{RELEASE}$(dirty).%%{ARCH}.rpm"
 	rpm -qlpiv $@
 
-test:
+test: $(LIBNAME) $(LIBNAME).3
 	@bash tests/tests.sh
 	@bash -c 'if type -P bash-4.4.0-1 ; then bash-4.4.0-1 tests/tests.sh ; fi'
 	@bash -c 'if type -P bash-4.3.0-1 ; then bash-4.3.0-1 tests/tests.sh ; fi'
