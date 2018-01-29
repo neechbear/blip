@@ -9,6 +9,11 @@ SED = sed
 GPG = gpg
 GREP = grep
 TAR = tar
+CP = cp
+LN = ln
+INSTALL = install
+POD2MAN = pod2man
+MARKDOWN = markdown
 
 makefile := $(abspath $(lastword $(MAKEFILE_LIST)))
 #srcdir := $(notdir $(patsubst %/,%,$(dir $(makefile))))
@@ -16,25 +21,35 @@ srcdir := $(dir $(makefile))
 builddir := $(srcdir)/build
 
 name := blip
+LIBNAME := $(name).bash
+
+# Used to determine if packaging targets should sign their output.
 gpgkeyid = "6393F646"
 gpgname = "Nicola Worthington"
-LIBNAME := $(name).bash
+gpgsign := $(shell $(GPG) --list-secret-keys | $(GREP) $(gpgkeyid) >/dev/null 2>&1 && echo true)
 
 # Read the version from blip.bash (if we've from a distribution archive),
 # otherwise try and extract it from VCS tags using gitversion.sh (which is not
 # distributed).
+# FIXME: Given that we should still keep the Makefile as functional as possible,
+# we shouldn't rely on the dist tarball containing pre-made versions of the
+# code. We should make this more robust for discovering the version without VCS.
+# Either read from a VERSION config file, or look at the directory name?
+# *shrugs*
 version := $(shell bash -c '{ source $(srcdir)/$(LIBNAME) && echo "$${BLIP_VERSINFO[0]}.$${BLIP_VERSINFO[1]}"; } 2>/dev/null || { eval $$($(srcdir)/gitversion.sh) && echo "$$VERSION_MAJOR.$$VERSION_MINOR"; }')
 release := $(shell bash -c '{ source $(srcdir)/$(LIBNAME) && echo "$${BLIP_VERSINFO[2]}"; } 2>/dev/null || { eval $$($(srcdir)/gitversion.sh) && echo "$$VERSION_RELEASE"; }')
 
-gpgsign := $(shell $(GPG) --list-secret-keys | $(GREP) $(gpgkeyid) >/dev/null 2>&1 && echo true)
 vcsshortref := $(shell git rev-parse --short=7 HEAD)
 versionmajor := $(word 1, $(subst ., ,$(version)))
 versionminor := $(word 2, $(subst ., ,$(version)))
-dirty = 
+dirty := $(word 5, $(subst -, ,$(shell git describe --dirty=-dirty)))
 
-DISTRPM := $(name)-$(version)$(dirty).noarch.rpm
-DISTDEB := $(name)-$(version)$(dirty).all.deb
+rpmmacros := $(builddir)/.rpmmacros
+
 DISTTAR := $(name)-$(version)$(dirty).tar.gz
+DISTRPM := $(name)-$(version)-$(release)$(dirty).noarch.rpm
+DISTDEBTAR := $(builddir)/$(name)_$(version).orig.tar.gz
+DISTDEB := $(builddir)/$(name)-$(version).all.deb
 
 TARGETS := $(LIBNAME) $(name).bash.3 $(name).spec README.html debian/changelog
 
@@ -50,13 +65,18 @@ all: $(TARGETS)
 
 clean:
 	$(RM) $(TARGETS)
+	$(RM) -r $(builddir)
 
 distclean:
-	$(RM) $(DISTTAR) $(DISTDEB) $(DISTRPM)
+	$(RM) $(DISTTAR) $(DISTDEB) $(DISTRPM) $(DISTDEBTAR)
+
+$(builddir)/$(name)-$(version): $(builddir) $(TARGETS)
+	mkdir $(builddir)/$(name)-$(version)
+	$(CP) -r $(TARGETS) Makefile CONTRIBUTORS RPM-GPG-KEY-nicolaw LICENSE *.pod *.md debian/ examples/ tests/ *.in $@/
 
 dist: $(DISTTAR)
-$(DISTTAR): $(TARGETS)
-	$(TAR) -zcf $@ $^ Makefile CONTRIBUTORS RPM-GPG-KEY-nicolaw LICENSE *.pod *.md debian/ examples/ tests/
+$(DISTTAR): $(builddir)/$(name)-$(version)
+	$(TAR) -zcf $@ -C $(builddir)/ $(name)-$(version)/
 
 $(builddir):
 	mkdir $(builddir)
@@ -72,36 +92,53 @@ debian/changelog:
 	$(srcdir)/gitversion.sh -d .git -p $(name) -S -l deb > $@
 
 $(name).spec: $(name).spec.in
-	cp $< $@
+	$(CP) $< $@
 	$(srcdir)/gitversion.sh -d .git -p $(name) -S -l rpm >> $@
 
 README.html: README.md
-	markdown $< > $@
+	$(MARKDOWN) $< > $@
 
 $(name).bash.3: $(name).bash.pod
-	pod2man \
+	$(POD2MAN) \
 		--name="$(shell echo $LIBNAME | tr A-Z a-z)" \
 		--release="$(LIBNAME) $(version)" \
 		--center="$(LIBNAME)" \
 		--section=3 \
 		--utf8 $< > $@
 
-.rpmmacros:
+$(DISTDEBTAR): $(DISTTAR) $(builddir)
+	$(LN) $< $@
+
+deb: $(DISTDEB)
+$(DISTDEB): debian/changelog $(DISTDEBTAR) $(builddir)/$(name)-$(version)
+	cd $(builddir)/$(name)-$(version) && debuild -sa -us -uc -i -I
+	dpkg-deb -I $@
+	dpkg-deb -c $@
+	#  _debuild "$release_dir"
+	#  if [[ -n "${gpg_keyid:-}" ]] ; then
+	#    _debuild "$release_dir/deb-src" "-k${gpg_keyid} -S"
+	#  fi
+	#"-k(gpgkeyid) -S"
+	#	$(subst true,--sign,$(gpgsign))
+
+$(rpmmacros): $(builddir)
 	echo "%_signature gpg" > $@
 	echo "%_gpg_name $(gpgname)" >> $@
 	echo "%_gpgbin /usr/bin/gpg" >> $@
 
 rpm: $(DISTRPM)
-$(DISTRPM): $(name).spec $(DISTTAR)
+$(DISTRPM): $(name).spec $(DISTTAR) $(rpmmacros)
+	#	--macros "$(rpmmacros)"
 	rpmbuild -ba "$(name).spec" \
 		--define "name $(name)" \
 		--define "version $(version)" \
 		--define "release $(release)$(dirty)" \
+		--define "dirty $(dirty)" \
 		$(subst true,--sign,$(gpgsign)) \
 		--define "_sourcedir $(srcdir)" \
-		--define "_rpmdir $(srcdir)" \
-		--define "_build_name_fmt %%{NAME}-%%{VERSION}-%%{RELEASE}$(dirty).%%{ARCH}.rpm"
-	rpm -qlpiv $@
+		--define "_rpmdir $(builddir)" \
+		--define "_build_name_fmt %%{NAME}-%%{VERSION}-%%{RELEASE}.%%{ARCH}.rpm"
+	#rpm -qlpiv $@
 
 test: $(LIBNAME) $(LIBNAME).3
 	@bash tests/tests.sh
@@ -112,59 +149,16 @@ test: $(LIBNAME) $(LIBNAME).3
 	@bash -c 'if type -P bash-4.0.0-1 ; then bash-4.0.0-1 tests/tests.sh "bash40_nounset_bug_workaround" ; fi'
 
 install:
-	install -m 0755 -d "$(DESTDIR)$(libdir)"
-	install -m 0755 -d "$(DESTDIR)$(man3dir)"
-	install -m 0755 -d "$(DESTDIR)$(docsdir)/tests"
-	install -m 0755 -d "$(DESTDIR)$(docsdir)/examples"
-	install -m 0644 blip.bash "$(DESTDIR)$(libdir)"
-	install -m 0644 blip.bash.3 "$(DESTDIR)$(man3dir)"
-	install -m 0644 README.* "$(DESTDIR)$(docsdir)"
-	install -m 0644 *.pod "$(DESTDIR)$(docsdir)"
-	install -m 0644 tests/* "$(DESTDIR)$(docsdir)/tests"
-	install -m 0644 examples/* "$(DESTDIR)$(docsdir)/examples"
+	$(INSTALL) -m 0755 -d "$(DESTDIR)$(libdir)"
+	$(INSTALL) -m 0755 -d "$(DESTDIR)$(man3dir)"
+	$(INSTALL) -m 0755 -d "$(DESTDIR)$(docsdir)/tests"
+	$(INSTALL) -m 0755 -d "$(DESTDIR)$(docsdir)/examples"
+	$(INSTALL) -m 0644 blip.bash "$(DESTDIR)$(libdir)"
+	$(INSTALL) -m 0644 blip.bash.3 "$(DESTDIR)$(man3dir)"
+	$(INSTALL) -m 0644 README.* "$(DESTDIR)$(docsdir)"
+	$(INSTALL) -m 0644 *.pod "$(DESTDIR)$(docsdir)"
+	$(INSTALL) -m 0644 tests/* "$(DESTDIR)$(docsdir)/tests"
+	$(INSTALL) -m 0644 examples/* "$(DESTDIR)$(docsdir)/examples"
     
 .PHONY: all dist test install clean distclean deb rpm
 
-#    declare debian_orig_tar="$build_base/${tarball%.tar.gz}.orig.tar.gz"
-#    debian_orig_tar="${debian_orig_tar//-/_}"
-#    cp ${verbose:+-v} "$build_base/$tarball" "$debian_orig_tar"
-#    debuild -sa ${debuild_extra_args:- -us -uc}
-#
-#    mv ${verbose:+-v} -- \
-#      "$build_base"/*.{dsc,changes,build,debian.tar.gz,orig.tar.gz} \
-#      "$release_dir"
-#
-#      dpkg-deb -I "$release_dir/${pkg}_${VERSION}${DIRTY_SUFFIX:+$DIRTY_SUFFIX}_all.deb"
-#      dpkg-deb -c "$release_dir/${pkg}_${VERSION}${DIRTY_SUFFIX:+$DIRTY_SUFFIX}_all.deb"
-#
-#  _debuild "$release_dir"
-#  if [[ -n "${gpg_keyid:-}" ]] ; then
-#    _debuild "$release_dir/deb-src" "-k${gpg_keyid} -S"
-#  fi
-#
-#_build () {
-#  # Copy files in to build directory.
-#  rsync -a ${verbose:+-v} \
-#    --exclude=".*" --exclude="build/" --exclude="release/" \
-#    --exclude="gitversion.sh" --exclude="build.sh" \
-#    "${base%/}/" "${build_dir%}/"
-#
-#
-#  # Create release tarball of resulting build directory.
-#  tar -C "$build_base" ${verbose:+-v} -zcf "$build_base/$tarball" "${build_dir##*/}/"
-#  cp ${verbose:+-v} "$build_base/$tarball" "$release_dir"
-#}
-#
-#  declare -g pkg="blip"
-#  eval "$("$base/gitversion.sh" -d "$base/.git" -p "$pkg" -S)"
-#  declare -g build_base="$base/build"
-#  declare -g build_dir="$build_base/${pkg}-${VERSION_MAJOR}.${VERSION_MINOR}${VERSION_POINT:+$VERSION_POINT}"
-#  declare -g release_dir="$base/release/${pkg}-${VERSION}${VERSION_POINT:+$VERSION_POINT}"
-#  declare -g tarball="${pkg}-${VERSION_MAJOR}.${VERSION_MINOR}.tar.gz"
-#
-#  if [[ "$(hostid)" = "007f0101" && "$(id -un)" = "nicolaw" ]] ; then
-#    # Sign with the authors key.
-#    declare -g gpg_keyid="6393F646"
-#    declare -g gpg_name="Nicola Worthington"
-#  fi
-#
