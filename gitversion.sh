@@ -1,9 +1,13 @@
-#!/bin/bash
+#!/usr/bin/env bash
 #
 # MIT License
 #
-# Copyright (c) 2016 Nicola Worthington
+# Copyright (c) 2016, 2017, 2018 Nicola Worthington
 #
+
+# TODO: This script is over engineered and broken. It needs to be replaced as a
+#       basic wrapper around git-dch, but still generate an RPM changelog. All
+#       the other functionality can be thrown away.
 
 set -ueo pipefail
 shopt -s nocasematch
@@ -157,6 +161,8 @@ changelog () {
   if [[ -z "$first" && -z "$last" ]] ; then
     local output=""
     while read -r last annotation; do
+      printf "\nlogtype=>%s< first=>%s< last=>%s< annotation=>%s<\n" \
+        "$logtype" "$first" "$last" "$annotation" >&2
       output="$(changelog "$logtype" "$first" "$last" "$annotation")
 
 $output"
@@ -204,14 +210,14 @@ $output"
 
         printf '%s (%s) %s; urgency=%s\n\n' \
           "$PKG_NAME" "$version${dirty_suffix:-}" "$os_distribution" "$urgency"
-        git log --format="format:  * %s" "${first:+$first..}${last}" | cat
-        git log -1 \
+        git log --branches="${BRANCH}" --format="format:  * %s" "${first:+$first..}${last}" | cat
+        git log --branches="${BRANCH}" -1 \
           --format="format:%n%n -- %aN <%aE>  %aD" \
           "${last}" | cat
         ;;
 
       redhat|rhel|centos|fedora|rpm)
-        git log -1 \
+        git log --branches="${BRANCH}" -1 \
           --format="format:* @%ad@ %aN <%aE> - $version${dirty_suffix:-}%n" \
           --date=raw \
           "${last}" \
@@ -219,13 +225,13 @@ $output"
             's/^\* @([0-9]+) [\+-]?[0-9]{4}@ /* @{[strftime("%a %b %d %Y",localtime($1))]} /'
           # Custom date formats are not supported in Git 1.x :-(
           #--date=format:"%a %b %d %Y" \
-        git log \
+        git log --branches="${BRANCH}" \
           --format="format:- %s" \
           "${first:+$first..}${last}" | cat
         ;;
 
       *%[a-zA-Z]*)
-        git log \
+        git log --branches="${BRANCHES}" \
           ${logtype:+--format="format:$logtype"} \
           "${first:+$first..}${last}" | cat
         ;;

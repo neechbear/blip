@@ -13,3 +13,4 @@ Architecture: all
 Depends: ${shlibs:Depends}, ${misc:Depends}, bc, grep (>= 2.12), coreutils (>= 8.13), curl (>= 7.26.0)
 Recommends: util-linux (>= 2.20.1)
 Description: Bash Library for Indolent Programmers
+ Common functions library for Bash 4 scripting.

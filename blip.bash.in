@@ -101,11 +101,11 @@ if [[ "${BASH_VERSINFO[0]}" -ge 4 ]] ; then
 fi
 
 if [[ -z "${BLIP_VERSION:+defined}" ]] ; then
-  declare ${__BLIP_BASH_V42:+-g} -a BLIP_VERSINFO=("@VERSION_MAJOR@" "@VERSION_MINOR@" "@VERSION_RELEASE@" "@VERSION_TAG@")
+  declare ${__BLIP_BASH_V42:+-g} -a BLIP_VERSINFO=("@VERSION_MAJOR@" "@VERSION_MINOR@" "@VERSION_PATCH@" "@VERSION_TAG@")
   declare ${__BLIP_BASH_V42:+-g} BLIP_VERSION="${BLIP_VERSINFO[0]}.${BLIP_VERSINFO[1]}.${BLIP_VERSINFO[2]}-${BLIP_VERSINFO[3]}"
 else
   echo "blip.bash version $BLIP_VERSION is already loaded." >&2
-  if ! [[ "$BLIP_VERSION" = "@VERSION_MAJOR@.@VERSION_MINOR@.@VERSION_RELEASE@-@VERSION_TAG@" ]] ; then
+  if ! [[ "$BLIP_VERSION" = "@VERSION_MAJOR@.@VERSION_MINOR@.@VERSION_PATCH@-@VERSION_TAG@" ]] ; then
     echo "Reloading conflicting versions of blip.bash over each" \
         "other may result in unpredictable behaviour!" >&2
   fi
@@ -154,7 +154,7 @@ declare ${__BLIP_BASH_V42:+-g} -x BLIP_EXTERNAL_CMD_GREP="${BLIP_EXTERNAL_CMD_GR
 #    fi
 #done < <(typeset -p BLIP_EXTERNAL_CMD 2>/dev/null||:)
 #declare -p BLIP_EXTERNAL_CMD >/dev/null 2>&1 || declare -Agx BLIP_EXTERNAL_CMD=()
-#for _ in flock stat bc curl date grep egrep ; do
+#for _ in flock stat bc curl date grep ; do
 #    BLIP_EXTERNAL_CMD[$_]="$_"
 #done
 
@@ -277,7 +277,7 @@ unset_trap_stack () {
       for idx in ${BLIP_TRAP_MAP[$sig]} ; do
         BLIP_TRAP_STACK[$idx]=""
       done
-      unset BLIP_TRAP_MAP[$sig]
+      unset BLIP_TRAP_MAP["$sig"]
     fi
   done
 }
@@ -298,7 +298,7 @@ get_trap_stack () {
 }
 
 get_variable_type () {
-  declare vtype="$(declare -p "$1" 2>/dev/null)"
+  declare vtype=""; vtype="$(declare -p "$1" 2>/dev/null)"
   vtype="${vtype#* -}"
   printf '%s' "${vtype%% *}"
 }
@@ -324,6 +324,7 @@ as_json_string () {
   declare str="$1"
   # shellcheck disable=SC1003
   declare -a shell=(        '\'  '"'  $'\b' $'\f' $'\n' $'\r' $'\t' )
+  # shellcheck disable=SC1003
   declare -a json_escaped=( '\\' '\"'  '\b'  '\f'  '\n'  '\r'  '\t' )
   declare -i i
   for i in "${!shell[@]}"; do
@@ -339,7 +340,7 @@ vars_as_json () {
   declare format='"%s": %s'
   printf '{'
   while [[ $# -ge 1 ]] ; do
-    declare vtype="$(get_variable_type "$1")"
+    declare vtype=""; vtype="$(get_variable_type "$1")"
 
     if [[ $vtype == *"a"* ]] ; then
       # Array.
@@ -349,6 +350,10 @@ vars_as_json () {
       printf "$format" "$1" '['
       declare -i i
       for i in "${!tmp_array[@]}" ; do
+        # TODO: Double check that this is a valid thing to disable here.
+        #       I think we want to preserve null values over empty strings, so
+        #       this is actually what we want.
+        # shellcheck disable=2086
         printf '%s' "$(as_json_value ${tmp_array[$i]+"${tmp_array[$i]}"})"
         if [[ $i -lt ${#tmp_array} ]] ; then
           printf ', '
@@ -358,7 +363,7 @@ vars_as_json () {
 
     elif [[ $vtype == *"A"* ]] ; then
       # Associative array / object.
-      declare tmp_indirection="$(declare -p "$1")"
+      declare tmp_indirection=""; tmp_indirection="$(declare -p "$1")"
       unset __blip_tmp_dict
       # Even though this declare works exactly as-is on the command line, even
       # including all the indirection, it doesn't appear to properly work here.
@@ -367,8 +372,11 @@ vars_as_json () {
       eval "declare -A __blip_tmp_dict=${tmp_indirection#*=}"
       if [[ $BLIP_DEBUG_LOGLEVEL -ge 3 ]] ; then
         declare -p "__blip_tmp_dict" >&2 || :
-        echo "__blip_tmp_dict keys=${!__blip_tmp_dict[@]}" >&2
-        echo "__blip_tmp_dict values=${__blip_tmp_dict[@]}" >&2
+        # We define this through an eval statement above, so shellcheck cannot
+        # detect that is it defined properly.
+        # shellcheck disable=SC2154
+        echo "__blip_tmp_dict keys=${!__blip_tmp_dict[*]}" >&2
+        echo "__blip_tmp_dict values=${__blip_tmp_dict[*]}" >&2
       fi
       # shellcheck disable=SC2059
       printf "$format" "$1" '{'
@@ -417,7 +425,7 @@ required_command_version () {
   declare command="$1"
   declare check_version="$2"
   declare version_command="${3:-${command} --version}"
-  is_newer_version "$check_version" "$($version_command 2>&1 | egrep -ow '[0-9]+\.[0-9\.]+' | tail -n1)"
+  is_newer_version "$check_version" "$($version_command 2>&1 | grep -Eow '[0-9]+\.[0-9\.]+' | tail -n1)"
 }
 
 get_pid_lock_filename () {
@@ -522,7 +530,7 @@ get_user_confirmation () {
 get_user_selection () {
   declare question="${1:-Make a selection }"; shift
   declare default_response="${1:-}"; shift
-  declare -i max_response_length="$(get_max_length "$@")"
+  declare -i max_response_length; max_response_length="$(get_max_length "$@")"
 
   # Replace with a standard argument validation routine.
   # http://tldp.org/LDP/abs/html/exitcodes.html
@@ -560,10 +568,11 @@ get_user_selection () {
 # Store the time that bash started (or a close enough aproximation assuming
 # that nobody has modified $SECONDS if we're using an older version of bash).
 if ! [[ -n "${BLIP_START_UNIXTIME+defined}" ]] ; then
+  declare ${__BLIP_BASH_V42:+-g} -x -i BLIP_START_UNIXTIME=""
   if [[ ${BASH_VERSINFO[0]} -ge 4 && ${BASH_VERSINFO[1]} -ge 2 ]] ; then
-    declare ${__BLIP_BASH_V42:+-g} -x -i BLIP_START_UNIXTIME="$(printf "%(%s)T" -2)"
+    BLIP_START_UNIXTIME="$(printf "%(%s)T" -2)"
   else
-    declare ${__BLIP_BASH_V42:+-g} -x -i BLIP_START_UNIXTIME="$(( $(date +"%s") - SECONDS ))"
+    BLIP_START_UNIXTIME="$(( $(date +"%s") - SECONDS ))"
   fi
 fi
 
@@ -603,7 +612,7 @@ url_http_header () {
 # Returns "200"
 url_http_response_code () {
   declare url="$1"
-  declare response="$(url_http_response "$url")"
+  declare response=""; response="$(url_http_response "$url")"
   if [[ "$response" =~ ([0-9]+) ]] ; then
     echo -n "${BASH_REMATCH[1]}"
   fi
@@ -630,7 +639,7 @@ url_exists () {
     $BLIP_EXTERNAL_CMD_CURL -k -s -L -I "$url" -o /dev/null 2>/dev/null
     return $?
   else
-    declare response="$(url_http_response_code "$url")"
+    declare response=""; response="$(url_http_response_code "$url")"
     if   is_int "$response" \
       && [[ $response -ge 200 ]] \
       && [[ $response -lt 300 ]] ; then
@@ -744,10 +753,10 @@ get_gecos_info () {
   declare key="${1:-}"
   declare user="${2:-$(get_username)}"
   #while IFS=: read username passwd uid gid gecos home shell ; do
-  while IFS=: read username _ _ _ gecos _ _ ; do
+  while IFS=: read -r username _ _ _ gecos _ _ ; do
     if [[ "$user" = "$username" ]] ; then
       if [[ -n "$key" ]] && [[ "$gecos" =~ ([,;]) ]] ; then
-        IFS="${BASH_REMATCH[1]}" read name addr office home email <<< "$gecos"
+        IFS="${BASH_REMATCH[1]}" read -r name addr office home email <<< "$gecos"
         case "$key" in
           *name) echo -n "$name" ;;
           building|room|addr*) echo -n "$addr" ;;
@@ -844,6 +853,15 @@ get_fs_mounts () {
   done < /proc/mounts
 }
 
+# FIXME: Check out what is failing in unit tests that call this function when we
+#        are checking the age of a file that does not exist. Is it the unittest
+#        that is broken, or blip itslef?
+# tests/../blip.bash: line 852: 1517188838 -  : syntax error: operand expected (error token is "-  ")
+# test #78 "echo 1" failed:
+#   expected "0"
+#     got "1"
+#    1 of 79 050_documentation.sh tests failed in 0.160s.
+
 # %w %W  time of file birth; - or 0 if unknown (creation)
 # %x %X  time of last access, human-readable (read)
 # %y %Y  time of last modification, human-readable (content)
@@ -854,7 +872,7 @@ get_file_age () {
 
 # Define ANSI colour code variables.
 # https://en.wikipedia.org/wiki/ANSI_escape_code
-if is_true "${BLIP_ANSI_VARIABLES:-}" && [[ -z "${ANSI[@]+defined}" ]] ; then
+if is_true "${BLIP_ANSI_VARIABLES:-}" && [[ -z "${ANSI[*]+defined}" ]] ; then
   declare -rx ANSI_RESET="[0m"          #
 
   declare -rx ANSI_BLINK_SLOW="[5m"     #
@@ -1290,7 +1308,7 @@ cmdarg_set_opt () {
     $CMDARG_TYPE_ARRAY)
       # shellcheck disable=SC2016
       declare str='${#'"$key"'[@]}'
-      declare prevlen="$(eval "echo \"$str\"")"
+      declare prevlen=""; prevlen="$(eval "echo \"$str\"")"
       eval "${key}[$(( prevlen + 1 ))]=\$arg"
       cmdarg_validate "$key" "$arg" || $CMDARG_ERROR_BEHAVIOR 1
       ;;
@@ -1394,7 +1412,7 @@ cmdarg_parse () {
       continue
     else
       echo "Malformed argument: $fullopt" >&2
-      echo "While parsing: $@" >&2
+      echo "While parsing: $*" >&2
       failed+=1
     fi
 
@@ -1434,7 +1452,7 @@ cmdarg_parse () {
     for key in "${CMDARG_REQUIRED[@]}"
     do
       # FIXME: We should check a return code, not do a process substitution.
-      if [[ -z "$(cmdarg_check_empty $key)" ]]; then
+      if [[ -z "$(cmdarg_check_empty "$key")" ]]; then
         missing+=("-${key}")
         failed=$(( failed + 1 ))
       fi
@@ -1443,7 +1461,7 @@ cmdarg_parse () {
 
   if [[ $failed -gt 0 ]]; then
     if [[ ${#missing[@]} -ge 1 ]]; then
-      echo "Missing ${#missing[@]} mandatory argument(s) : ${missing[@]}" >&2
+      echo "Missing ${#missing[@]} mandatory argument(s) : ${missing[*]}" >&2
     fi
     echo >&2
   fi
@@ -1526,7 +1544,7 @@ __blip_stacktrace__() {
           "" "$BASH" "-$-" "$0" "${argv[*]}"
         break
       fi
-      argv_offset=$((argv_offset + ${BASH_ARGC[frame]}))
+      argv_offset=$((argv_offset+BASH_ARGC[frame]))
       frame=$((frame+1))
     done
   else

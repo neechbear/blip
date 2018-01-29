@@ -8,7 +8,7 @@ BuildArch: noarch
 Prefix: /usr
 Prefix: /usr/lib
 Prefix: /usr/share/man
-Source0: %{name}-%{version}.tar.gz
+Source0: %{name}-%{version}%{?dirty}.tar.gz
 URL: https://nicolaw.uk/blip
 Packager: Nicola Worthington <nicolaw@tfb.net>
 
@@ -20,6 +20,9 @@ rm -rf --one-file-system --preserve-root "%{buildroot}"
 
 %prep
 %setup -q
+
+%build
+make
 
 %install
 make install DESTDIR="%{buildroot}" prefix=/usr
