@@ -277,7 +277,7 @@ unset_trap_stack () {
       for idx in ${BLIP_TRAP_MAP[$sig]} ; do
         BLIP_TRAP_STACK[$idx]=""
       done
-      unset BLIP_TRAP_MAP[$sig]
+      unset BLIP_TRAP_MAP["$sig"]
     fi
   done
 }
@@ -298,7 +298,7 @@ get_trap_stack () {
 }
 
 get_variable_type () {
-  declare vtype="$(declare -p "$1" 2>/dev/null)"
+  declare vtype=""; vtype="$(declare -p "$1" 2>/dev/null)"
   vtype="${vtype#* -}"
   printf '%s' "${vtype%% *}"
 }
@@ -324,6 +324,7 @@ as_json_string () {
   declare str="$1"
   # shellcheck disable=SC1003
   declare -a shell=(        '\'  '"'  $'\b' $'\f' $'\n' $'\r' $'\t' )
+  # shellcheck disable=SC1003
   declare -a json_escaped=( '\\' '\"'  '\b'  '\f'  '\n'  '\r'  '\t' )
   declare -i i
   for i in "${!shell[@]}"; do
@@ -339,7 +340,7 @@ vars_as_json () {
   declare format='"%s": %s'
   printf '{'
   while [[ $# -ge 1 ]] ; do
-    declare vtype="$(get_variable_type "$1")"
+    declare vtype=""; vtype="$(get_variable_type "$1")"
 
     if [[ $vtype == *"a"* ]] ; then
       # Array.
@@ -349,6 +350,10 @@ vars_as_json () {
       printf "$format" "$1" '['
       declare -i i
       for i in "${!tmp_array[@]}" ; do
+        # TODO: Double check that this is a valid thing to disable here.
+        #       I think we want to preserve null values over empty strings, so
+        #       this is actually what we want.
+        # shellcheck disable=2086
         printf '%s' "$(as_json_value ${tmp_array[$i]+"${tmp_array[$i]}"})"
         if [[ $i -lt ${#tmp_array} ]] ; then
           printf ', '
@@ -358,7 +363,7 @@ vars_as_json () {
 
     elif [[ $vtype == *"A"* ]] ; then
       # Associative array / object.
-      declare tmp_indirection="$(declare -p "$1")"
+      declare tmp_indirection=""; tmp_indirection="$(declare -p "$1")"
       unset __blip_tmp_dict
       # Even though this declare works exactly as-is on the command line, even
       # including all the indirection, it doesn't appear to properly work here.
@@ -367,8 +372,11 @@ vars_as_json () {
       eval "declare -A __blip_tmp_dict=${tmp_indirection#*=}"
       if [[ $BLIP_DEBUG_LOGLEVEL -ge 3 ]] ; then
         declare -p "__blip_tmp_dict" >&2 || :
-        echo "__blip_tmp_dict keys=${!__blip_tmp_dict[@]}" >&2
-        echo "__blip_tmp_dict values=${__blip_tmp_dict[@]}" >&2
+        # We define this through an eval statement above, so shellcheck cannot
+        # detect that is it defined properly.
+        # shellcheck disable=SC2145
+        echo "__blip_tmp_dict keys=${!__blip_tmp_dict[*]}" >&2
+        echo "__blip_tmp_dict values=${__blip_tmp_dict[*]}" >&2
       fi
       # shellcheck disable=SC2059
       printf "$format" "$1" '{'

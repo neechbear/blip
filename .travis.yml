@@ -2,6 +2,7 @@
 language: bash
 script:
   - make
+  - shellcheck --version || true
   - make test
   - make deb
   - make rpm
