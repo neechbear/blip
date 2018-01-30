@@ -7,7 +7,6 @@ functions properly on any platform where Bash 4 can be installed.
 Works safely with `nounset` (`set -u`), `functrace` (`set -T`), `xtrace`
 (`set -x`) and `extdebug` options.
 
-
 ## Synopsis
 
     #!/bin/bash
@@ -61,7 +60,6 @@ Works safely with `nounset` (`set -u`), `functrace` (`set -T`), `xtrace`
     
     main "$@"
 
-
 ## Description
 
 The `cmdarg` functionality of `blip.bash` is similar to the `getopt` and
@@ -94,7 +92,6 @@ realistically 62 options (26 upper-case characters, 26 lower-case characters,
 10 digits).
 
 Future releases will remove this restristion.
-
 
 ## Defining Help Information with cmdarg_info
 
@@ -150,22 +147,39 @@ Examples:
     cmdarg 'a?' 'optional-arg' 'Some optional arg with a default' 'default_value'
     cmdarg 'a:' 'required-validated-arg' 'Some required argument with a validator' '' validator_function
 
-*FLAGS* : The first argument to cmdarg must be an argument specification. Argument specifications take the form 'NOT', where:
+### FLAGS
 
-- N : The single letter Name of the argument
-- O : Whether the option is optional or not. Use ':' here for a required argument, '?' for an optional argument. If you provide a default value for a required argument (:), then it becomes optional.
-- T : The type. Leave empty for a string argument, use '[]' for an array argument, use '{}' for a hash argument.
+The first argument to cmdarg must be an argument specification. Argument
+specifications take the form 'NOT', where:
 
-If O and T are both unset, and only the single letter N is provided, then the argument is a boolean argument which will default to false.
+  - *N* : The single letter Name of the argument.
+  - *O* : Whether the option is optional or not. Use `:` here for a required
+          argument, `?` for an optional argument. If you provide a default
+          value for a required argument (:), then it becomes optional.
+  - *T* : The type. Leave empty for a string argument, use `[]` for an array
+          argument, use `{}` for a hash argument.
 
-*LONGOPT* is a long option name (such as long-option-name) that can be used to set your argument via --LONGOPT instead of via -N (from your FLAGS).
+If *O* and *T* are both unset, and only the single letter *N* is provided, then
+the argument is a boolean argument which will default to false.
 
-*DESCRIPTION* is a string that describes what this argument is for.
+### LONGOPT
 
-*DEFAULT* is any default value that you want to be set for this option if the user does not specify one
+The long command line option name (such as long-option-name) that can be used
+to set your argument via `--LONGOPT` instead of via `-N` (from your FLAGS).
 
-*VALIDATOR* The name of a bash function which will validate this argument (see VALIDATORS below).
+### DESCRIPTION
 
+The string that describes what this argument is for.
+
+### DEFAULT
+
+Any default value that you want to be set for this option if the user does not
+specify one.
+
+### VALIDATOR
+
+The name of a bash function which will validate this argument (see VALIDATORS
+section below).
 
 ## List (Array) & Dict (Associative Array) Options
 
@@ -212,7 +226,6 @@ When executed, should produce the following output:
     animal_class[carp]=actinopterygii
     animal_class[human]=mammalia
 
-
 ### Validators
 
 Validators must be bash function names - not bash statements - and they must
@@ -258,10 +271,10 @@ you must pass your command line arguments to it. Generally this means:
 
     cmdarg_parse "$@"
 
-... Beware that `$@` will change depending on your context. So if you have a
-main() function called in your script, you need to make sure that you pass "$@"
-from the toplevel script in to it, otherwise the options will be blank when you
-pass them to cmdarg_parse.
+Beware that `$@` will change depending on your context. So if you have a
+main() function called in your script, you need to make sure that you pass
+`"$@"` from the toplevel script in to it, otherwise the options will be blank
+when you pass them to `cmdarg_parse`.
 
 Any argument parsed that has a validator assigned, and whose validator returns
 nonzero, is considered a failure. Any REQUIRED argument that is not specified is
@@ -279,7 +292,6 @@ during scripting.
     cmdarg_parse "$@"
     echo ${cmdarg_cfg['x']}
 
-
 ## Positional Arguments & --
 
 Like any good option parsing framework, cmdarg understands '--' and positional
@@ -288,7 +300,7 @@ applied to them. So if you have:
 
     myscript.sh -x 0 --longopt thingy file1 file2
 
-... It would seem reasonable to assume that -x and --longopt would be parsed as
+It would seem reasonable to assume that `-x` and `--longopt` would be parsed as
 expected; with arguments of 0 and thingy. But what to do with file1 and file2?
 cmdarg puts those into a bash indexed array called cmdarg_argv.
 
@@ -298,9 +310,8 @@ case:
 
     myscript.sh -x 0 --longopt thingy -- --some-thing-with-dashes
 
-... Cmdarg would parse -x and --longopt as expected, and then ${cmdarg_argv[0]}
+Cmdarg would parse `-x` and `--longopt` as expected, and then `${cmdarg_argv[0]}`
 would hold "--some-thing-with-dashes", for your program to do with what it will.
-
 
 ## Automatic Help Messages
 
@@ -321,7 +332,8 @@ consider this script:
     cmdarg 'a?[]' 'myarray' 'Some array of stuff'
     cmdarg_parse "$@"
 
-... And you ran it with `--help`, you would get a nice preformatted help message:
+If you ran this script `--help`, you would presented with a nice preformatted
+help message:
 
     $ test.sh --help
     test.sh
@@ -344,7 +356,6 @@ consider this script:
 You can change the formatting of help messages with helper functions. (see
 Helpers, below).
 
-
 ## Helper Functions
 
 cmdarg is meant to be extensible by default, so there are some places where you
@@ -356,13 +367,12 @@ cmdarg_helpers hash, like this:
     # Completely replace cmdarg's builtin --help message generator with your own
     cmdarg_helpers['usage']=my_usage_function
 
-
 ### Description Helper
 
 The description helper is used when you are happy with the overall structure of
 how cmdarg prints your usage message (header, required, optional, footer), but
 you want to change the way that individual arguments are described. You can do
-this by setting cmdarg_helpers['describe'] to the name of a bash function which
+this by setting `cmdarg_helpers['describe']` to the name of a bash function which
 accepts the following parameters (in order):
 
   * `$1` : long option to be described
@@ -391,21 +401,20 @@ function is ignored.
 
 For examples of this behavior, see `examples/` and `tests/`.
 
-
 ## Usage Helper
 
 The usage helper is used when you want to completely override cmdarg's built in
---help handler. Note that, when you override the usage helper, you will no longer
+`--help` handler. Note that, when you override the usage helper, you will no longer
 benefit from the description helper, since that is called from inside of the
 default usage handler. If you override the usage helper, you will have to
-implement 100% of --help functionality on your own.
+implement 100% of `--help` functionality on your own.
 
 The short options for all specified arguments in cmdarg are kept in a hash
-${CMDARG} which maps short arguments (-x) to long arguments
-(--long-version-of-x). However, it is not recommended that you iterate over this
+`${CMDARG}` which maps short arguments (`-x`) to long arguments
+(`--long-version-of-x`). However, it is not recommended that you iterate over this
 hash directly, as the order of hash key iteration is not guaranteed, so your
---help message will change every time. To help with this, cmdarg populates two
-one-dimensional arrays, CMDARG_OPTIONAL and CMDARG_REQUIRED with the short
+`--help` message will change every time. To help with this, cmdarg populates two
+one-dimensional arrays, `CMDARG_OPTIONAL` and `CMDARG_REQUIRED` with the short
 options of all optional and require arguments, respectively. It is recommended
 that you iterate over these arrays instead of CMDARG to ensure an ordered
 output. It is further recommended that you still utilize cmdarg_describe to
@@ -414,7 +423,6 @@ get the flags, the type, etc of the argument, and lets you continue to provide a
 standard interface for your API developer(s).
 
 For examples of this behavior, see `examples/` and `tests/`.
-
 
 ## Errant Behaviour
 

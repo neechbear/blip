@@ -1,4 +1,5 @@
 #!/bin/bash
+# shellcheck disable=SC2154
 
 test_210_1_clean_state_usable () {
   function parse1 () {
