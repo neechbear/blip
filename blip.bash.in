@@ -467,7 +467,6 @@ read_config_file () {
   _safe_read_vars () {
     declare input_file="$1"; shift
     (
-      # shellcheck source=/dev/null
       source "$input_file" || :
       declare var=""
       for var in "$@" ; do
