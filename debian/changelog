@@ -1,56 +1,20 @@
-blip (0.9-1) trusty; urgency=low
+blip (0.10.1) trusty; urgency=low
 
-  * Only display help once, after all other warnings.
-  * Do not prematurely exit on --help (set cmdarg_cfg[help])
-  * Improved cmdarg docs. Added __blip_stacktrace__().
-  * Initial import of https://github.com/akesterson/cmdarg/blob/master/README.md
+  * Moved to semantic versioning scheme.
+  * Abandoned old build.sh and gitversion.sh script in favour of pure
+    Makefile.
+  * Removed markdown conversion of README.md to README.html from packaging.
+  * Temporarily abandoned automatic changelog generation for DEB and RPM
+    packaging.
+  * Addressed an number of shellcheck warnings relating to unit tests.
 
- -- Nicola Worthington <nicolaw@tfb.net>  Fri, 23 Jun 2017 00:10:15 +0100
+ -- Nicola Worthington <nicolaw@tfb.net>  Tue, 30 Jan 2018 20:20:45 +0000
 
-blip (0.8-1) trusty; urgency=low
+blip (0.10-1) trusty; urgency=low
 
-  * Converted cmdarg.sh unittests to use assert.sh.
-  * Imported cmdarg.sh shunittests.
-  * Merged in fork of Andrew Kesterson's cmdarg.sh library.
-  * Improve bash 4.0, 4.1 and 4.2 compatibility
-  * Add test coverage stub for get_user_shell().
-  * Add man page stub for get_user_shell().
-  * Add get_user_shell. Fix read_config_file.
-
- -- Nicola Worthington <nicolaw@tfb.net>  Fri, 9 Jun 2017 20:49:01 +0100
-
-blip (0.7-1) trusty; urgency=low
-
-  * Improve bash 4.0, 4.1 and 4.2 compatibility.
-  * Add test coverage stub for get_user_shell().
-  * Add man page stub for get_user_shell().
-  * Add get_user_shell. Fix read_config_file.
-
- -- Nicola Worthington <nicolaw@tfb.net>  Mon, 21 Nov 2016 18:09:41 +0000
-
-blip (0.6-1) trusty; urgency=low
-
-  * Fixed pop_trap_handler and BLIP_VERSINFO unbound errors.
-  * Include dirty suffix in RPM package builds when not building checked out tagged release.
-  * Fixed build and runtime dependencies.
-  * Travis CI test via build.sh instead of make test.
-
- -- Nicola Worthington <nicolaw@tfb.net>  Mon, 21 Nov 2016 18:09:41 +0000
-
-blip (0.5-2) trusty; urgency=low
-
-  * Build process now dynamically driven with gitversion.sh.
-  * Added json functions.
-  * Build script verbosity made configurable.
-  * Ignore release/ directory (typo fix from releases/).
-  * Silence some shellcheck lint warnings.
-  * Fix README.md code climate warnings.
-  * Added extra installation instructions and PPA links.
-
- -- Nicola Worthington <nicolaw@tfb.net>  Wed, 16 Nov 2016 22:17:28 +0000
-
-blip (0.3-1) trusty; urgency=low
-
-  * Release 0.3-1, first working launchpad build.
+  * Fix bad array subscript error with invalid long option.
+  * Tightened dependencies for Debian package.
+  * Squashed source repository history and abandoned alpha changelog in
+    preparation for more polished beta releases.
 
  -- Nicola Worthington <nicolaw@tfb.net>  Tue, 25 Oct 2016 21:45:55 +0100
