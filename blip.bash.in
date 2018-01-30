@@ -101,11 +101,11 @@ if [[ "${BASH_VERSINFO[0]}" -ge 4 ]] ; then
 fi
 
 if [[ -z "${BLIP_VERSION:+defined}" ]] ; then
-  declare ${__BLIP_BASH_V42:+-g} -a BLIP_VERSINFO=("@VERSION_MAJOR@" "@VERSION_MINOR@" "@VERSION_RELEASE@" "@VERSION_TAG@")
+  declare ${__BLIP_BASH_V42:+-g} -a BLIP_VERSINFO=("@VERSION_MAJOR@" "@VERSION_MINOR@" "@VERSION_PATCH@" "@VERSION_TAG@")
   declare ${__BLIP_BASH_V42:+-g} BLIP_VERSION="${BLIP_VERSINFO[0]}.${BLIP_VERSINFO[1]}.${BLIP_VERSINFO[2]}-${BLIP_VERSINFO[3]}"
 else
   echo "blip.bash version $BLIP_VERSION is already loaded." >&2
-  if ! [[ "$BLIP_VERSION" = "@VERSION_MAJOR@.@VERSION_MINOR@.@VERSION_RELEASE@-@VERSION_TAG@" ]] ; then
+  if ! [[ "$BLIP_VERSION" = "@VERSION_MAJOR@.@VERSION_MINOR@.@VERSION_PATCH@-@VERSION_TAG@" ]] ; then
     echo "Reloading conflicting versions of blip.bash over each" \
         "other may result in unpredictable behaviour!" >&2
   fi

@@ -1,5 +1,5 @@
 release/
-build/
+blip-*.*/
 blip.bash
 *.swp
 *.spec
@@ -15,6 +15,7 @@ blip.bash
 *.builinfo
 *.html
 *.3
+version.mk
 debian/changelog
 .rpmmacros
 .rpmrc

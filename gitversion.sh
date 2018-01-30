@@ -157,8 +157,8 @@ changelog () {
   if [[ -z "$first" && -z "$last" ]] ; then
     local output=""
     while read -r last annotation; do
-      #printf "\nlogtype=>%s< first=>%s< last=>%s< annotation=>%s<\n" \
-      #  "$logtype" "$first" "$last" "$annotation" >&2
+      printf "\nlogtype=>%s< first=>%s< last=>%s< annotation=>%s<\n" \
+        "$logtype" "$first" "$last" "$annotation" >&2
       output="$(changelog "$logtype" "$first" "$last" "$annotation")
 
 $output"
