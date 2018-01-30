@@ -4,6 +4,11 @@
 # Copyright (c) 2016, 2017, 2018 Nicola Worthington <nicolaw@tfb.net>.
 #
 
+name := blip
+libname := $(name).bash
+manpage := $(libname).3
+specfile := $(name).spec
+
 SHELL = /bin/sh
 SED = sed
 GPG = gpg
@@ -15,17 +20,10 @@ INSTALL = install
 POD2MAN = pod2man
 MARKDOWN = markdown
 
-makefile := $(abspath $(lastword $(MAKEFILE_LIST)))
-#srcdir := $(notdir $(patsubst %/,%,$(dir $(makefile))))
-srcdir := $(dir $(makefile))
-
-name := blip
-LIBNAME := $(name).bash
 GIT_DESCRIBE := git describe --long --always --abbrev=4 --match=v* --dirty=~dirty --tags
-
--include version.mk
+GIT_VERSION := $(strip $(shell $(GIT_DESCRIBE) 2>/dev/null))
 ifeq ($(GIT_VERSION),)
-	GIT_VERSION := $(strip $(shell $(GIT_DESCRIBE) 2>/dev/null))
+	-include version.mk
 endif
 
 comma:= ,
@@ -35,7 +33,7 @@ space:= $(empty) $(empty)
 vcsahead := $(word $(shell echo $$(( $(words $(subst -, ,$(GIT_VERSION))) - 1 )) ),$(subst -, ,$(GIT_VERSION)))
 vcstag := $(subst $(space),-,$(wordlist 1,$(shell echo $$(( $(words $(subst -, ,$(GIT_VERSION))) - 2 )) ),$(subst -, ,$(GIT_VERSION))))
 vcsshortref := $(firstword $(subst ~, ,$(lastword $(subst -, ,$(GIT_VERSION)))))
-vcsdirty := $(lastword $(subst ~, ,$(GIT_VERSION)))
+vcsdirty := $(findstring ~dirty,$(GIT_VERSION))
 
 version := $(vcstag:v%=%)
 versionmajor := $(word 1, $(subst ., ,$(version)))
@@ -43,22 +41,12 @@ versionminor := $(word 2, $(subst ., ,$(version)))
 versionpatch := $(word 3, $(subst ., ,$(version)))
 release := 1
 
-builddir := $(srcdir)$(name)-$(version)
+makefile := $(abspath $(lastword $(MAKEFILE_LIST)))
+srcdir := $(dir $(makefile))
+builddir := $(name)-$(version)
 
-# Used to determine if packaging targets should sign their output.
-gpgkeyid = "6393F646"
-gpgname = "Nicola Worthington"
-gpgsign := $(shell $(GPG) --list-secret-keys | $(GREP) $(gpgkeyid) >/dev/null 2>&1 && echo true)
-
-#rpmmacros := $(builddir)/.rpmmacros
-
-DISTTAR := $(name)-$(version)$(vcsdirty).tar.gz
-DISTRPM := $(name)-$(version)-$(release)$(vcsdirty).noarch.rpm
-DISTDEBTAR := $(name)_$(version).orig.tar.gz
-DISTDEB := $(name)-$(version).all.deb
-
-TARGETS := $(LIBNAME) $(name).bash.3 README.html
-DISTTARGETS := debian/changelog version.mk $(name).spec
+gpgkeyid := 6393F646
+gpgsign := $(subst $(gpgkeyid),true,$(findstring $(gpgkeyid),$(shell $(GPG) --list-secret-keys)))
 
 prefix = /usr/local
 bindir = $(prefix)/bin
@@ -68,24 +56,35 @@ docsdir = $(sharedir)/doc/blip
 mandir = $(sharedir)/man
 man3dir = $(mandir)/man3
 
+DISTTAR := $(name)-$(version)$(vcsdirty).tar.gz
+DISTRPM := $(name)-$(version)-$(release)$(vcsdirty).noarch.rpm
+DISTDEBTAR := $(name)_$(version).orig.tar.gz
+DISTDEB := $(name)-$(version).all.deb
+
+DISTTARGETS := debian/changelog version.mk $(specfile)
+TARGETS := $(libname) $(manpage) README.html
+
 all: $(TARGETS)
 
 clean:
 	$(RM) $(TARGETS)
 
+veryclean:
+	$(RM) $(DISTTARGETS)
+
 distclean:
-	$(RM) $(DISTTAR) $(DISTDEB) $(DISTRPM) $(DISTDEBTAR) $(DISTTARGETS) *.gz *.xz *.dsc *.changes *.build *.rpm *.deb
+	$(RM) $(DISTTAR) $(DISTDEB) $(DISTRPM) $(DISTDEBTAR) *.gz *.xz *.dsc *.changes *.build *.rpm *.deb
 	$(RM) -r $(builddir)
 
 $(builddir): | $(DISTTARGETS)
 	mkdir $(builddir)
-	$(CP) -r $| $(LIBNAME).in Makefile CONTRIBUTORS RPM-GPG-KEY-nicolaw LICENSE *.pod *.md debian/ examples/ tests/ $@/
+	$(CP) -r version.mk $(specfile) $(libname).in Makefile CONTRIBUTORS RPM-GPG-KEY-nicolaw LICENSE *.pod *.md debian/ examples/ tests/ $@/
 
 dist: $(DISTTAR)
 $(DISTTAR): $(builddir)
-	$(TAR) -zcf $@ $(builddir)
+	$(TAR) -vzcf $@ $(builddir)
 
-$(LIBNAME): $(LIBNAME).in
+$(libname): $(libname).in
 	$(SED) -e "s/@VERSION_MAJOR@/$(versionmajor)/g" \
 				 -e "s/@VERSION_MINOR@/$(versionminor)/g" \
 				 -e "s/@VERSION_PATCH@/$(versionpatch)/g" \
@@ -108,21 +107,22 @@ vcsinfo:
 	@echo "release=>$(release)<"
 
 debian/changelog:
-	true
+	git checkout $@
+	dch -M -v $(version) "blah blah blah"
 	#$(srcdir)/gitversion.sh -d .git -p $(name) -S -l deb > $@
 
-$(name).spec: $(name).spec.in
+$(specfile): $(specfile).in
 	$(CP) $< $@
 	#$(srcdir)/gitversion.sh -d .git -p $(name) -S -l rpm >> $@
 
 README.html: README.md
 	$(MARKDOWN) $< > $@
 
-$(name).bash.3: $(name).bash.pod
+$(manpage): $(libname).pod
 	$(POD2MAN) \
-		--name="$(shell echo $LIBNAME | tr A-Z a-z)" \
-		--release="$(LIBNAME) $(version)" \
-		--center="$(LIBNAME)" \
+		--name="$(shell echo $libname | tr A-Z a-z)" \
+		--release="$(libname) $(version)" \
+		--center="$(libname)" \
 		--section=3 \
 		--utf8 $< > $@
 
@@ -131,26 +131,17 @@ $(DISTDEBTAR): $(DISTTAR)
 
 deb: $(DISTDEB)
 $(DISTDEB): debian/changelog $(DISTDEBTAR) $(builddir)
-	cd $(builddir) && debuild -sa -us -uc -i -I
+ifeq ($(gpgsign),true)
+		cd $(builddir) && debuild -sa -us -uc -i -I -k$(gpgkeyid) -S
+else
+		cd $(builddir) && debuild -sa -us -uc -i -I
+endif
 	dpkg-deb -I $@
 	dpkg-deb -c $@
-	#  _debuild "$release_dir"
-	#  if [[ -n "${gpg_keyid:-}" ]] ; then
-	#    _debuild "$release_dir/deb-src" "-k${gpg_keyid} -S"
-	#  fi
-	#"-k(gpgkeyid) -S"
-	#	$(subst true,--sign,$(gpgsign))
-
-#$(rpmmacros): $(builddir)
-#	echo "%_signature gpg" > $@
-#	echo "%_gpg_name $(gpgname)" >> $@
-#	echo "%_gpgbin /usr/bin/gpg" >> $@
 
 rpm: $(DISTRPM)
-#$(DISTRPM): $(name).spec $(DISTTAR) $(rpmmacros)
-$(DISTRPM): $(name).spec $(DISTTAR)
-	#	--macros "$(rpmmacros)"
-	rpmbuild -ba "$(name).spec" \
+$(DISTRPM): $(specfile) $(DISTTAR)
+	rpmbuild -ba "$(specfile)" \
 		--define "name $(name)" \
 		--define "version $(version)" \
 		--define "release $(release)$(vcsdirty)" \
@@ -159,9 +150,8 @@ $(DISTRPM): $(name).spec $(DISTTAR)
 		--define "_sourcedir $(srcdir)" \
 		--define "_rpmdir $(srcdir)" \
 		--define "_build_name_fmt %%{NAME}-%%{VERSION}-%%{RELEASE}.%%{ARCH}.rpm"
-	#rpm -qlpiv $@
 
-test: $(LIBNAME) $(LIBNAME).3
+test: $(libname) $(manpage)
 	@bash tests/tests.sh
 	@bash -c 'if type -P bash-4.4.0-1 ; then bash-4.4.0-1 tests/tests.sh ; fi'
 	@bash -c 'if type -P bash-4.3.0-1 ; then bash-4.3.0-1 tests/tests.sh ; fi'
@@ -174,8 +164,8 @@ install:
 	$(INSTALL) -m 0755 -d "$(DESTDIR)$(man3dir)"
 	$(INSTALL) -m 0755 -d "$(DESTDIR)$(docsdir)/tests"
 	$(INSTALL) -m 0755 -d "$(DESTDIR)$(docsdir)/examples"
-	$(INSTALL) -m 0644 blip.bash "$(DESTDIR)$(libdir)"
-	$(INSTALL) -m 0644 blip.bash.3 "$(DESTDIR)$(man3dir)"
+	$(INSTALL) -m 0644 $(libname) "$(DESTDIR)$(libdir)"
+	$(INSTALL) -m 0644 $(manpage) "$(DESTDIR)$(man3dir)"
 	$(INSTALL) -m 0644 README.* "$(DESTDIR)$(docsdir)"
 	$(INSTALL) -m 0644 *.pod "$(DESTDIR)$(docsdir)"
 	$(INSTALL) -m 0644 tests/* "$(DESTDIR)$(docsdir)/tests"

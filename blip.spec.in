@@ -21,6 +21,9 @@ rm -rf --one-file-system --preserve-root "%{buildroot}"
 %prep
 %setup -q
 
+%build
+make
+
 %install
 make install DESTDIR="%{buildroot}" prefix=/usr
 

@@ -1,3 +1,9 @@
+blip (0.10.0) UNRELEASED; urgency=medium
+
+  * blah blah blah
+
+ -- Nicola Worthington <nicolaw@tfb.net>  Tue, 30 Jan 2018 19:39:56 +0000
+
 blip (0.9-1) trusty; urgency=low
 
   * Only display help once, after all other warnings.
