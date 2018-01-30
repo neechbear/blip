@@ -71,7 +71,7 @@ all: $(TARGETS)
 clean:
 	$(RM) $(TARGETS)
 
-veryclean:
+veryclean: distclean clean
 	$(RM) version.mk
 
 distclean: clean
