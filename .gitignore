@@ -2,7 +2,6 @@ release/
 blip-*.*/
 blip.bash
 *.swp
-*.spec
 *.tar.gz
 *.xz
 *.tar
