@@ -14,8 +14,10 @@ SED = sed
 GPG = gpg
 GREP = grep
 TAR = tar
+MV = mv
 CP = cp
 LN = ln
+TR = tr
 INSTALL = install
 POD2MAN = pod2man
 MARKDOWN = markdown
@@ -58,10 +60,10 @@ man3dir = $(mandir)/man3
 
 DISTTAR := $(name)-$(version)$(vcsdirty).tar.gz
 DISTRPM := $(name)-$(version)-$(release)$(vcsdirty).noarch.rpm
+#DISTDEBTAR := $(name)_$(version)$(shell lsb_release -is | $(TR) 'A-Z' 'a-z')$(release).orig.tar.gz
 DISTDEBTAR := $(name)_$(version).orig.tar.gz
-DISTDEB := $(name)-$(version).all.deb
+DISTDEB := $(name)_$(version)_all.deb
 
-DISTTARGETS := debian/changelog version.mk $(specfile)
 TARGETS := $(libname) $(manpage) README.html
 
 all: $(TARGETS)
@@ -70,19 +72,28 @@ clean:
 	$(RM) $(TARGETS)
 
 veryclean:
-	$(RM) $(DISTTARGETS)
+	$(RM) version.mk
 
-distclean:
+distclean: clean
 	$(RM) $(DISTTAR) $(DISTDEB) $(DISTRPM) $(DISTDEBTAR) *.gz *.xz *.dsc *.changes *.build *.rpm *.deb
 	$(RM) -r $(builddir)
 
-$(builddir): | $(DISTTARGETS)
+$(builddir): | version.mk
 	mkdir $(builddir)
 	$(CP) -r version.mk $(specfile) $(libname).in Makefile CONTRIBUTORS RPM-GPG-KEY-nicolaw LICENSE *.pod *.md debian/ examples/ tests/ $@/
 
-dist: $(DISTTAR)
+release:
+	mkdir $@
+
+release/$(version): | release
+	mkdir $@
+
+stash: $(DISTTAR) $(DISTRPM) $(DISTDEB) | release/$(version)
+	$(CP) -rpv $(name)_$(version)* $(name)-$(version)* release/$(version)
+
+dist: $(DISTTAR) $(DISTRPM) $(DISTDEB)
 $(DISTTAR): $(builddir)
-	$(TAR) -vzcf $@ $(builddir)
+	$(TAR) -zcf $@ $(builddir)
 
 $(libname): $(libname).in
 	$(SED) -e "s/@VERSION_MAJOR@/$(versionmajor)/g" \
@@ -107,13 +118,14 @@ vcsinfo:
 	@echo "release=>$(release)<"
 
 debian/changelog:
-	git checkout $@
-	dch -M -v $(version) "blah blah blah"
-	#$(srcdir)/gitversion.sh -d .git -p $(name) -S -l deb > $@
+	git-dch --debian-branch=master --debian-tag="v%(version)s" --id-length=4 --distribution=xenial
+#	git-dch --debian-branch=master --debian-tag="v%(version)s" --id-length=4 --distribution=$$(lsb_release -cs)
+#	$(srcdir)/gitversion.sh -d .git -p $(name) -S -l deb > $@
 
-$(specfile): $(specfile).in
-	$(CP) $< $@
-	#$(srcdir)/gitversion.sh -d .git -p $(name) -S -l rpm >> $@
+# TODO: Fix automated generation of both RPM and DEB changelogs again.
+#$(specfile): $(specfile).in
+#	$(CP) $< $@
+#	#$(srcdir)/gitversion.sh -d .git -p $(name) -S -l rpm >> $@
 
 README.html: README.md
 	$(MARKDOWN) $< > $@
@@ -131,13 +143,13 @@ $(DISTDEBTAR): $(DISTTAR)
 
 deb: $(DISTDEB)
 $(DISTDEB): debian/changelog $(DISTDEBTAR) $(builddir)
-ifeq ($(gpgsign),true)
-		cd $(builddir) && debuild -sa -us -uc -i -I -k$(gpgkeyid) -S
-else
-		cd $(builddir) && debuild -sa -us -uc -i -I
-endif
+	cd $(builddir) && debuild -sa -us -uc -i -I
 	dpkg-deb -I $@
 	dpkg-deb -c $@
+ifeq ($(gpgsign),true)
+	echo bacon
+	cd $(builddir) && debuild -sa -i -I -k$(gpgkeyid) -S
+endif
 
 rpm: $(DISTRPM)
 $(DISTRPM): $(specfile) $(DISTTAR)
@@ -150,6 +162,7 @@ $(DISTRPM): $(specfile) $(DISTTAR)
 		--define "_sourcedir $(srcdir)" \
 		--define "_rpmdir $(srcdir)" \
 		--define "_build_name_fmt %%{NAME}-%%{VERSION}-%%{RELEASE}.%%{ARCH}.rpm"
+	rpm -qpil $@
 
 test: $(libname) $(manpage)
 	@bash tests/tests.sh
@@ -171,5 +184,5 @@ install:
 	$(INSTALL) -m 0644 tests/* "$(DESTDIR)$(docsdir)/tests"
 	$(INSTALL) -m 0644 examples/* "$(DESTDIR)$(docsdir)/examples"
     
-.PHONY: all dist test install clean distclean deb rpm vcsinfo
+.PHONY: all dist test install clean distclean deb rpm vcsinfo stash
 

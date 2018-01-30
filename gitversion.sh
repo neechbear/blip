@@ -1,9 +1,13 @@
-#!/bin/bash
+#!/usr/bin/env bash
 #
 # MIT License
 #
-# Copyright (c) 2016 Nicola Worthington
+# Copyright (c) 2016, 2017, 2018 Nicola Worthington
 #
+
+# TODO: This script is over engineered and broken. It needs to be replaced as a
+#       basic wrapper around git-dch, but still generate an RPM changelog. All
+#       the other functionality can be thrown away.
 
 set -ueo pipefail
 shopt -s nocasematch

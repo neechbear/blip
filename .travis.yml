@@ -1,6 +1,10 @@
 ---
 language: bash
-script: ./build.sh
+script:
+  - make
+  - make test
+  - make deb
+  - make rpm
 dist: trusty
 os: linux
 addons:
