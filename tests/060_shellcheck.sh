@@ -11,7 +11,7 @@ test_060_shellcheck () {
     # This fix doesn't seem to have made it in to the releases of shellcheck
     # that are available for my distribution. :(
     declare output=""; output="$(mktemp)"
-    assert_raises "shellcheck -e SC2102 -s bash '$blip' > '$output' 2>&1" 0
+    assert_raises "shellcheck -e SC1090 -e SC2102 -s bash '$blip' > '$output' 2>&1" 0
     cat "$output" >&2
 
     assert_end "${BASH_SOURCE[0]##*/}"
