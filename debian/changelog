@@ -1,8 +1,9 @@
 blip (0.10.1) trusty; urgency=low
 
+  * Moved to native Debian package and semantic versioning scheme.
   * Abandoned old build.sh and gitversion.sh script in favour of pure
     Makefile.
-  * Moved to native Debian package and semantic versioning scheme.
+  * Removed markdown conversion of README.md to README.html from packaging.
   * Temporarily abandoned automatic changelog generation for DEB and RPM
     packaging.
   * Addressed an number of shellcheck warnings relating to unit tests.

@@ -20,7 +20,6 @@ LN = ln
 TR = tr
 INSTALL = install
 POD2MAN = pod2man
-MARKDOWN = markdown
 
 GIT_DESCRIBE := git describe --long --always --abbrev=4 --match=v* --dirty=~dirty --tags
 GIT_VERSION := $(strip $(shell $(GIT_DESCRIBE) 2>/dev/null))
@@ -64,7 +63,7 @@ DISTRPM := $(name)-$(version)-$(release)$(vcsdirty).noarch.rpm
 DISTDEBTAR := $(name)_$(version).orig.tar.gz
 DISTDEB := $(name)_$(version)_all.deb
 
-TARGETS := $(libname) $(manpage) README.html
+TARGETS := $(libname) $(manpage) 
 
 all: $(TARGETS)
 
@@ -126,9 +125,6 @@ debian/changelog:
 #$(specfile): $(specfile).in
 #	$(CP) $< $@
 #	#$(srcdir)/gitversion.sh -d .git -p $(name) -S -l rpm >> $@
-
-README.html: README.md
-	$(MARKDOWN) $< > $@
 
 $(manpage): $(libname).pod
 	$(POD2MAN) \
