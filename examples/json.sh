@@ -1,8 +1,8 @@
 #!/bin/bash
+# shellcheck disable=SC2034
 
 set -euo pipefail
 
-# shellcheck disable=SC2034
 BLIP_REQUIRE_VERSION="0.4-1"
 source "${BASH_SOURCE[0]%/*}/../blip.bash"
 
@@ -23,5 +23,6 @@ declare -p MYOBJECT
 compgen -v MY
 
 BLIP_DEBUG_LOGLEVEL=3
+# shellcheck disable=SC2046
 vars_as_json $(compgen -v MY)
 
