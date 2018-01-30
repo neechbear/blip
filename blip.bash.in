@@ -154,7 +154,7 @@ declare ${__BLIP_BASH_V42:+-g} -x BLIP_EXTERNAL_CMD_GREP="${BLIP_EXTERNAL_CMD_GR
 #    fi
 #done < <(typeset -p BLIP_EXTERNAL_CMD 2>/dev/null||:)
 #declare -p BLIP_EXTERNAL_CMD >/dev/null 2>&1 || declare -Agx BLIP_EXTERNAL_CMD=()
-#for _ in flock stat bc curl date grep egrep ; do
+#for _ in flock stat bc curl date grep ; do
 #    BLIP_EXTERNAL_CMD[$_]="$_"
 #done
 
@@ -374,7 +374,7 @@ vars_as_json () {
         declare -p "__blip_tmp_dict" >&2 || :
         # We define this through an eval statement above, so shellcheck cannot
         # detect that is it defined properly.
-        # shellcheck disable=SC2145
+        # shellcheck disable=SC2154
         echo "__blip_tmp_dict keys=${!__blip_tmp_dict[*]}" >&2
         echo "__blip_tmp_dict values=${__blip_tmp_dict[*]}" >&2
       fi
@@ -425,7 +425,7 @@ required_command_version () {
   declare command="$1"
   declare check_version="$2"
   declare version_command="${3:-${command} --version}"
-  is_newer_version "$check_version" "$($version_command 2>&1 | egrep -ow '[0-9]+\.[0-9\.]+' | tail -n1)"
+  is_newer_version "$check_version" "$($version_command 2>&1 | grep -Eow '[0-9]+\.[0-9\.]+' | tail -n1)"
 }
 
 get_pid_lock_filename () {
@@ -467,6 +467,7 @@ read_config_file () {
   _safe_read_vars () {
     declare input_file="$1"; shift
     (
+      # shellcheck source=/dev/null
       source "$input_file" || :
       declare var=""
       for var in "$@" ; do
@@ -530,7 +531,7 @@ get_user_confirmation () {
 get_user_selection () {
   declare question="${1:-Make a selection }"; shift
   declare default_response="${1:-}"; shift
-  declare -i max_response_length="$(get_max_length "$@")"
+  declare -i max_response_length; max_repsonse_length="$(get_max_length "$@")"
 
   # Replace with a standard argument validation routine.
   # http://tldp.org/LDP/abs/html/exitcodes.html
@@ -568,10 +569,11 @@ get_user_selection () {
 # Store the time that bash started (or a close enough aproximation assuming
 # that nobody has modified $SECONDS if we're using an older version of bash).
 if ! [[ -n "${BLIP_START_UNIXTIME+defined}" ]] ; then
+  declare ${__BLIP_BASH_V42:+-g} -x -i BLIP_START_UNIXTIME=""
   if [[ ${BASH_VERSINFO[0]} -ge 4 && ${BASH_VERSINFO[1]} -ge 2 ]] ; then
-    declare ${__BLIP_BASH_V42:+-g} -x -i BLIP_START_UNIXTIME="$(printf "%(%s)T" -2)"
+    BLIP_START_UNIXTIME="$(printf "%(%s)T" -2)"
   else
-    declare ${__BLIP_BASH_V42:+-g} -x -i BLIP_START_UNIXTIME="$(( $(date +"%s") - SECONDS ))"
+    BLIP_START_UNIXTIME="$(( $(date +"%s") - SECONDS ))"
   fi
 fi
 
@@ -611,7 +613,7 @@ url_http_header () {
 # Returns "200"
 url_http_response_code () {
   declare url="$1"
-  declare response="$(url_http_response "$url")"
+  declare response=""; response="$(url_http_response "$url")"
   if [[ "$response" =~ ([0-9]+) ]] ; then
     echo -n "${BASH_REMATCH[1]}"
   fi
@@ -638,7 +640,7 @@ url_exists () {
     $BLIP_EXTERNAL_CMD_CURL -k -s -L -I "$url" -o /dev/null 2>/dev/null
     return $?
   else
-    declare response="$(url_http_response_code "$url")"
+    declare response=""; response="$(url_http_response_code "$url")"
     if   is_int "$response" \
       && [[ $response -ge 200 ]] \
       && [[ $response -lt 300 ]] ; then
@@ -752,10 +754,10 @@ get_gecos_info () {
   declare key="${1:-}"
   declare user="${2:-$(get_username)}"
   #while IFS=: read username passwd uid gid gecos home shell ; do
-  while IFS=: read username _ _ _ gecos _ _ ; do
+  while IFS=: read -r username _ _ _ gecos _ _ ; do
     if [[ "$user" = "$username" ]] ; then
       if [[ -n "$key" ]] && [[ "$gecos" =~ ([,;]) ]] ; then
-        IFS="${BASH_REMATCH[1]}" read name addr office home email <<< "$gecos"
+        IFS="${BASH_REMATCH[1]}" read -r name addr office home email <<< "$gecos"
         case "$key" in
           *name) echo -n "$name" ;;
           building|room|addr*) echo -n "$addr" ;;
@@ -871,7 +873,7 @@ get_file_age () {
 
 # Define ANSI colour code variables.
 # https://en.wikipedia.org/wiki/ANSI_escape_code
-if is_true "${BLIP_ANSI_VARIABLES:-}" && [[ -z "${ANSI[@]+defined}" ]] ; then
+if is_true "${BLIP_ANSI_VARIABLES:-}" && [[ -z "${ANSI[*]+defined}" ]] ; then
   declare -rx ANSI_RESET="[0m"          #
 
   declare -rx ANSI_BLINK_SLOW="[5m"     #
@@ -1411,7 +1413,7 @@ cmdarg_parse () {
       continue
     else
       echo "Malformed argument: $fullopt" >&2
-      echo "While parsing: $@" >&2
+      echo "While parsing: $*" >&2
       failed+=1
     fi
 
@@ -1460,7 +1462,7 @@ cmdarg_parse () {
 
   if [[ $failed -gt 0 ]]; then
     if [[ ${#missing[@]} -ge 1 ]]; then
-      echo "Missing ${#missing[@]} mandatory argument(s) : ${missing[@]}" >&2
+      echo "Missing ${#missing[@]} mandatory argument(s) : ${missing[*]}" >&2
     fi
     echo >&2
   fi
