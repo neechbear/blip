@@ -41,6 +41,7 @@ versionmajor := $(word 1, $(subst ., ,$(version)))
 versionminor := $(word 2, $(subst ., ,$(version)))
 versionpatch := $(word 3, $(subst ., ,$(version)))
 release := 1
+#debdistro := $(shell lsb_release -is | $(TR) 'A-Z' 'a-z')
 
 makefile := $(abspath $(lastword $(MAKEFILE_LIST)))
 srcdir := $(dir $(makefile))
@@ -59,7 +60,8 @@ man3dir = $(mandir)/man3
 
 DISTTAR := $(name)-$(version)$(vcsdirty).tar.gz
 DISTRPM := $(name)-$(version)-$(release)$(vcsdirty).noarch.rpm
-#DISTDEBTAR := $(name)_$(version)$(shell lsb_release -is | $(TR) 'A-Z' 'a-z')$(release).orig.tar.gz
+#DISTDEBTAR := $(name)_$(version)$(debdistro)$(release).orig.tar.gz
+#DISTDEB := $(name)_$(version)$(debdistro)_all.deb
 DISTDEBTAR := $(name)_$(version).orig.tar.gz
 DISTDEB := $(name)_$(version)_all.deb
 
