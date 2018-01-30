@@ -52,9 +52,9 @@ test_080_coverage () {
     # native test coverage reporting for shell scripts.
     while read -r function ; do
         function="${function%% *}"
-        #assert_raises "egrep -w '(assert|assert_raises) .*$function' '$tests'/*.sh" 0
-        assert_raises "egrep -w '(assert|assert_raises) .*$function' $tests/*.sh" 0
-    done < <(egrep -o '^[a-z_]+\ \(\)' "$blip" | sort -u)
+        #assert_raises "grep -Ew '(assert|assert_raises) .*$function' '$tests'/*.sh" 0
+        assert_raises "grep -Ew '(assert|assert_raises) .*$function' $tests/*.sh" 0
+    done < <(grep -Eo '^[a-z_]+\ \(\)' "$blip" | sort -u)
 
     assert_end "${BASH_SOURCE[0]##*/}"
 }

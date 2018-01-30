@@ -1,4 +1,5 @@
 #!/bin/bash
+# shellcheck disable=SC2034,SC2016
 
 test_270_1_flags_required () {
   # Tests that flags (:?) are required for array or hash arguments

@@ -22,5 +22,5 @@ do
     $test_func "$@"
     set +xvEe
     eval "set -${__bash_set}"
-done < <(compgen -A function | egrep '^test_[0-9]+_' | sort -n)
+done < <(compgen -A function | grep -E '^test_[0-9]+_' | sort -n)
 

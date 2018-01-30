@@ -1,4 +1,5 @@
 #!/bin/bash
+# shellcheck disable=SC2034
 
 test_260_1_longopt () {
   cmdarg_purge

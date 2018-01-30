@@ -1,4 +1,5 @@
 #!/bin/bash
+# shellcheck disable=SC2034
 
 test_240_1_usage_helper () {
   function usage_helper () {

@@ -1,4 +1,5 @@
 #!/bin/bash
+# shellcheck disable=SC2034
 
 test_280_1_validator_for_hash () {
   function my_hash_validator () {

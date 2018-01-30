@@ -9,7 +9,7 @@ test_050_documentation () {
   while read -r function ; do
     function="${function%% *}"
     assert_raises "grep '^=head2 $function ' '$pod'" 0
-  done < <(egrep -o '^[a-z_]+\ \(\)' "$blip" | sort -u)
+  done < <(grep -Eo '^[a-z_]+\ \(\)' "$blip" | sort -u)
 
   # Check all BLIP_ variables are documented.
   while read -r variable ; do
