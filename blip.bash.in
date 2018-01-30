@@ -531,7 +531,7 @@ get_user_confirmation () {
 get_user_selection () {
   declare question="${1:-Make a selection }"; shift
   declare default_response="${1:-}"; shift
-  declare -i max_response_length; max_repsonse_length="$(get_max_length "$@")"
+  declare -i max_response_length; max_response_length="$(get_max_length "$@")"
 
   # Replace with a standard argument validation routine.
   # http://tldp.org/LDP/abs/html/exitcodes.html
@@ -1309,7 +1309,7 @@ cmdarg_set_opt () {
     $CMDARG_TYPE_ARRAY)
       # shellcheck disable=SC2016
       declare str='${#'"$key"'[@]}'
-      declare prevlen="$(eval "echo \"$str\"")"
+      declare prevlen=""; prevlen="$(eval "echo \"$str\"")"
       eval "${key}[$(( prevlen + 1 ))]=\$arg"
       cmdarg_validate "$key" "$arg" || $CMDARG_ERROR_BEHAVIOR 1
       ;;
@@ -1453,7 +1453,7 @@ cmdarg_parse () {
     for key in "${CMDARG_REQUIRED[@]}"
     do
       # FIXME: We should check a return code, not do a process substitution.
-      if [[ -z "$(cmdarg_check_empty $key)" ]]; then
+      if [[ -z "$(cmdarg_check_empty "$key")" ]]; then
         missing+=("-${key}")
         failed=$(( failed + 1 ))
       fi
@@ -1545,7 +1545,7 @@ __blip_stacktrace__() {
           "" "$BASH" "-$-" "$0" "${argv[*]}"
         break
       fi
-      argv_offset=$((argv_offset + ${BASH_ARGC[frame]}))
+      argv_offset=$((argv_offset+BASH_ARGC[frame]))
       frame=$((frame+1))
     done
   else
