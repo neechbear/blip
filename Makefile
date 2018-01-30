@@ -18,10 +18,28 @@ MARKDOWN = markdown
 makefile := $(abspath $(lastword $(MAKEFILE_LIST)))
 #srcdir := $(notdir $(patsubst %/,%,$(dir $(makefile))))
 srcdir := $(dir $(makefile))
-builddir := $(srcdir)/build
+builddir := $(srcdir)build
 
 name := blip
 LIBNAME := $(name).bash
+
+GIT_DESCRIBE := $(strip $(shell git describe --long --always --dirty=~dirty 2>/dev/null))
+WORD_POS := $(shell echo $$(( $(words $(subst -, ,$(GIT_DESCRIBE))) - 1 )) )
+TAG_POS := $(shell echo $$(( $(words $(subst -, ,$(GIT_DESCRIBE))) - 2 )) )
+COMMITS_AHEAD := $(word $(WORD_POS),$(subst -, ,$(GIT_DESCRIBE)))
+GIT_TAG := $(wordlist 1,$(TAG_POS),$(subst -, ,$(GIT_DESCRIBE)))
+SCM_REV := $(firstword $(subst ~, ,$(lastword $(subst -, ,$(GIT_DESCRIBE)))))
+DIRTY := $(lastword $(subst ~, ,$(GIT_DESCRIBE)))
+
+foo:
+	@echo "GIT_TAG=>$(GIT_TAG)<"
+	@echo "COMMITS_AHEAD=>$(COMMITS_AHEAD)<"
+	@echo "TAG_POS=>$(TAG_POS)<"
+	@echo "WORD_POS=>$(WORD_POS)<"
+	@echo "DIRTY=>$(DIRTY)<"
+	@echo "SCM_REV=>$(SCM_REV)<"
+	@echo "GIT_DESCRIBE=>$(GIT_DESCRIBE)<"
+
 
 # Used to determine if packaging targets should sign their output.
 gpgkeyid = "6393F646"
@@ -70,7 +88,7 @@ clean:
 distclean:
 	$(RM) $(DISTTAR) $(DISTDEB) $(DISTRPM) $(DISTDEBTAR)
 
-$(builddir)/$(name)-$(version): $(builddir) $(TARGETS)
+$(builddir)/$(name)-$(version): | $(builddir) $(TARGETS)
 	mkdir $(builddir)/$(name)-$(version)
 	$(CP) -r $(TARGETS) Makefile CONTRIBUTORS RPM-GPG-KEY-nicolaw LICENSE *.pod *.md debian/ examples/ tests/ *.in $@/
 
@@ -107,7 +125,7 @@ $(name).bash.3: $(name).bash.pod
 		--utf8 $< > $@
 
 $(DISTDEBTAR): $(DISTTAR) $(builddir)
-	$(LN) $< $@
+	$(LN) -f $< $@
 
 deb: $(DISTDEB)
 $(DISTDEB): debian/changelog $(DISTDEBTAR) $(builddir)/$(name)-$(version)
@@ -136,7 +154,7 @@ $(DISTRPM): $(name).spec $(DISTTAR) $(rpmmacros)
 		--define "dirty $(dirty)" \
 		$(subst true,--sign,$(gpgsign)) \
 		--define "_sourcedir $(srcdir)" \
-		--define "_rpmdir $(builddir)" \
+		--define "_rpmdir $(srcdir)" \
 		--define "_build_name_fmt %%{NAME}-%%{VERSION}-%%{RELEASE}.%%{ARCH}.rpm"
 	#rpm -qlpiv $@
 
