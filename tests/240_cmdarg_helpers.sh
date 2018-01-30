@@ -9,6 +9,7 @@ test_240_1_usage_helper () {
 
   function parser () {
     cmdarg_purge
+    # shellcheck disable=SC2154
     cmdarg_helpers[usage]=usage_helper
     cmdarg_parse --help
   }
@@ -45,6 +46,7 @@ test_240_2_custom_helpers () {
   }
 
   cmdarg_purge
+  # shellcheck disable=SC2154
   cmdarg_helpers['describe']=describe
   parser
 

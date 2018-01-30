@@ -1,3 +1,4 @@
+#!/usr/bin/env bash
 # pre-commit.sh
 #git stash -q --keep-index
 make test

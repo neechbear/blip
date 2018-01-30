@@ -89,7 +89,9 @@ test_270_6_boolean_no_optarg () {
   assert_raises "cmdarg_parse -b something" 0
   cmdarg_parse -b something
 
+  # shellcheck disable=SC2154
   assert "echo ${cmdarg_cfg[boolean]}" "true"
+  # shellcheck disable=SC2154
   assert "echo ${cmdarg_argv[0]}" "something"
 
   assert_end "${BASH_SOURCE[0]##*/}:${FUNCNAME[0]}()"

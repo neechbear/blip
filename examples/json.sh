@@ -17,6 +17,7 @@ declare -a MYNULLARRAY=
 declare MYSTRING=" <This is a string!> "
 declare -a MYARRAY=("index one" "" 3 "  four  " "")
 declare -A MYNULLOBJECT=
+# shellcheck disable=SC2192
 declare -A MYOBJECT=([one]="index one" [two]= [three]=3 [four]="  four   " [five]="")
 declare -p MYOBJECT
 

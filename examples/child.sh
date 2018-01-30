@@ -1,4 +1,5 @@
 #!/bin/bash
+# shellcheck disable=SC1091
 
 if [[ -r blip.bash ]] ; then
     source blip.bash
