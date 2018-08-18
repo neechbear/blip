@@ -17,9 +17,7 @@ genuinely is the most appropriate option?"_, I hear you ask! Well, by providing
 functions for many common tasks, I'm hoping that `blip` will help fill some of
 the gaps for those situations.
 
-```
-source /usr/lib/blip.bash
-```
+    source /usr/lib/blip.bash
 
 Please see the man page `man blip.bash`, [bash.pod for full
 documentation](blip.bash.pod) or `/usr/share/doc/blip` directory for code
@@ -27,10 +25,10 @@ examples and other useful information.
 
 * <https://nicolaw.uk/blip>
 * <https://github.com/neechbear/blip/>
-  * <https://github.com/neechbear/blip/releases>
-  * <https://launchpad.net/~nicolaw/+archive/ubuntu/blip>
-  * <http://ppa.launchpad.net/nicolaw/blip/ubuntu/>
-  * <https://raw.githubusercontent.com/neechbear/blip/master/blip.bash>
+* <https://github.com/neechbear/blip/releases>
+* <https://launchpad.net/~nicolaw/+archive/ubuntu/blip>
+* <http://ppa.launchpad.net/nicolaw/blip/ubuntu/>
+* <https://raw.githubusercontent.com/neechbear/blip/master/blip.bash>
 
 ## Installation
 
@@ -40,37 +38,65 @@ On Ubuntu, you can install from my PPA
 [ppa:nicolaw/blip](https://launchpad.net/~nicolaw/+archive/ubuntu/blip)
 by running the following commands:
 
-```
-sudo add-apt-repository ppa:nicolaw/blip
-sudo apt-get update
-sudo apt-get install blip
-```
+    sudo add-apt-repository ppa:nicolaw/blip
+    sudo apt-get update
+    sudo apt-get install blip
 
 ### Debian
 
 On Debian or other Debian-based distributions, you can
-[download the DEB package from GitHub](https://github.com/neechbear/blip/releases)
+[download the DEB package from GitHub](https://github.com/neechbear/blip/releases/latest)
 and install it manually with:
 
-```
-curl -o https://github.com/neechbear/blip/releases/download/path/to/blip_pkg.deb
-sudo dpkg -i blip_pkg.deb
-```
+    # Determine release latest DEB package URL.
+    blip_deb_url="$(curl -sSL \
+      "https://api.github.com/repos/neechbear/blip/releases/latest" \
+        | jq -r '.assets[] | select(.name|match(".deb$";"i")).browser_download_url')"
+    # Download and install latest release DEB package.
+    curl -sSLO "$blip_deb_url"
+    sudo dpkg -i "${blip_deb_url##*/}"
 
 ### RedHat, CentOS, Fedora
 
 Similarly for RedHat based distributions you can
-[install the RPM package from GitHub](https://github.com/neechbear/blip/releases)
+[install the RPM package from GitHub](https://github.com/neechbear/blip/releases/latest)
 manually with:
 
-```
-sudo yum localinstall https://github.com/neechbear/blip/releases/download/path/to/blip_pkg.rpm
-```
+    # Determine release latest RPM package URL.
+    blip_rpm_url="$(curl -sSL \
+      "https://api.github.com/repos/neechbear/blip/releases/latest" \
+        | jq -r '.assets[] | select(.name|match(".rpm$";"i")).browser_download_url')"
+    # Download and install latest release RPM package.
+    curl -sSLO "$blip_rpm_url"
+    sudo yum localinstall "${blip_rpm_url##*/}"
+
+### macOS Homebrew
+
+A [Homebrew](https://brew.sh) formula for Blip is maintained in the
+[neechbear/tap](https://github.com/neechbear/homebrew-tap) tap.
+
+    brew tap neechbear/tap
+    brew install neechbear/tap/blip
+    brew list blip
+
+Blip will typically be installed into the `/usr/local/Cellar/blip/` cellar.
 
 ### Source
 
-Reminder to author, write instructions for installation from GitHub or source
-tarball here.
+Souce installation can be achieved either by cloning the GitHub repository, or
+(preferably) by downloading the
+[latest release tarball from GitHub](https://github.com/neechbear/blip/releases/latest):
+
+    # Determine release latest tarball URL.
+    blip_tar_url="$(curl -sSL \
+      "https://api.github.com/repos/neechbear/blip/releases/latest" \
+        | jq -r '.assets[] | select(.name|match("blip-[0-9]+.[0-9]+.tar.gz$";"i")).browser_download_url')"
+    # Download latest release tarball.
+    curl -sSLO "$blip_tar_url"
+    # Extract and install Blip from tarball.
+    tar -zxf "${blip_tar_url##*/}"
+    cd blip-*/
+    sudo make install
 
 ## TODO
 
