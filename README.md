@@ -25,13 +25,6 @@ Please see the man page `man blip.bash`, [bash.pod for full
 documentation](blip.bash.pod) or `/usr/share/doc/blip` directory for code
 examples and other useful information.
 
-* <https://nicolaw.uk/blip>
-* <https://github.com/neechbear/blip/>
-* <https://github.com/neechbear/blip/releases>
-* <https://launchpad.net/~nicolaw/+archive/ubuntu/blip>
-* <http://ppa.launchpad.net/nicolaw/blip/ubuntu/>
-* <https://raw.githubusercontent.com/neechbear/blip/master/blip.bash.in>
-
 ## Installation
 
 ### Ubuntu
@@ -100,6 +93,15 @@ Souce installation can be achieved either by cloning the GitHub repository, or
     tar -zxf "${blip_tar_url##*/}"
     cd blip-*/
     sudo make install
+
+## Links
+
+* <https://nicolaw.uk/blip>
+* <https://github.com/neechbear/blip/>
+* <https://github.com/neechbear/blip/releases>
+* <https://launchpad.net/~nicolaw/+archive/ubuntu/blip>
+* <http://ppa.launchpad.net/nicolaw/blip/ubuntu/>
+* <https://raw.githubusercontent.com/neechbear/blip/master/blip.bash.in>
 
 ## TODO
 
