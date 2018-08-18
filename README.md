@@ -111,18 +111,9 @@ Souce installation can be achieved either by cloning the GitHub repository, or
 * Maybe create [pkg](https://wiki.archlinux.org/index.php/creating_packages),
   [apk](https://wiki.alpinelinux.org/wiki/Creating_an_Alpine_package) and
   [portage](https://wiki.gentoo.org/wiki/Portage) packages if I get bored.
-
-### Pending Functionality
-
 * Add `get_user_input()` - multi character user input without defaults.
 * Add process locking functions.
 * Add background daemonisation functions (ewww; ppl should use systemd).
 * Add standard logging functions.
 * Add syslogging functionality of all process `STDOUT` + `STDERR`.
 * Add common array manipulation functions.
-
-## See Also
-
-<https://github.com/akesterson/cmdarg> - A pure bash library to make argument
-parsing far less troublesome.
-
