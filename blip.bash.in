@@ -132,7 +132,7 @@ if [[ -n "${BLIP_REQUIRE_VERSION:-}" ]] ; then
          "required version $BLIP_REQUIRE_VERSION; exiting!" >&2
     $BLIP_INTERNAL_FATAL_ACTION
   fi
-  unset BLIP_REQUIRE_VERSIFO
+  unset BLIP_REQUIRE_VERSINFO
 fi
 
 # Assign command names to run from $PATH unless otherwise already defined.
