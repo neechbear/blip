@@ -18,6 +18,8 @@ functions for many common tasks, I'm hoping that `blip` will help fill some of
 the gaps for those situations.
 
     source /usr/lib/blip.bash
+    # Alternate path for macOS Homebrew installations:
+    #source /usr/local/lib/blip.bash
 
 Please see the man page `man blip.bash`, [bash.pod for full
 documentation](blip.bash.pod) or `/usr/share/doc/blip` directory for code
@@ -28,7 +30,7 @@ examples and other useful information.
 * <https://github.com/neechbear/blip/releases>
 * <https://launchpad.net/~nicolaw/+archive/ubuntu/blip>
 * <http://ppa.launchpad.net/nicolaw/blip/ubuntu/>
-* <https://raw.githubusercontent.com/neechbear/blip/master/blip.bash>
+* <https://raw.githubusercontent.com/neechbear/blip/master/blip.bash.in>
 
 ## Installation
 
@@ -79,7 +81,8 @@ A [Homebrew](https://brew.sh) formula for Blip is maintained in the
     brew install neechbear/tap/blip
     brew list blip
 
-Blip will typically be installed into the `/usr/local/Cellar/blip/` cellar.
+Blip will typically be installed into the `/usr/local/Cellar/blip/` cellar,
+and symlinked from `/usr/local/lib/blip.bash`.
 
 ### Source
 
