@@ -2,7 +2,7 @@
 #
 # blip - Bash Library for Indolent Programmers
 #
-# Please see the man page blip.bash(3) or bash.pod for full documentation.
+# Please see the man page blip.bash(3) or bash.bash.3.md for full documentation.
 #
 # This library is written for, and requires the bash shell. It is not expected
 # to, nor intended to work with the bourne shell or any other shell. Great care
@@ -11,7 +11,7 @@
 #
 # https://nicolaw.uk/blip
 # https://github.com/neechbear/blip/
-# https://github.com/neechbear/blip/blob/master/blip.bash.pod
+# https://github.com/neechbear/blip/blob/master/blip.bash.3.md
 #
 # MIT License
 #

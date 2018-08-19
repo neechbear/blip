@@ -21,8 +21,8 @@ the gaps for those situations.
     # Alternate path for macOS Homebrew installations:
     #source /usr/local/lib/blip.bash
 
-Please see the man page `man blip.bash`, [bash.pod for full
-documentation](blip.bash.pod) or `/usr/share/doc/blip` directory for code
+Please see the man page `man blip.bash`, [blip.bash.3.md for full
+documentation](blip.bash.3.md) or `/usr/share/doc/blip` directory for code
 examples and other useful information.
 
 ## Installation

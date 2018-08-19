@@ -20,6 +20,7 @@ LN = ln
 TR = tr
 INSTALL = install
 POD2MAN = pod2man
+MD2MAN = go-md2man
 
 GIT_DESCRIBE := git describe --long --always --abbrev=4 --match=v* --dirty=~dirty --tags
 GIT_VERSION := $(strip $(shell $(GIT_DESCRIBE) 2>/dev/null))
@@ -81,7 +82,7 @@ distclean: clean
 
 $(builddir): | version.mk
 	mkdir $(builddir)
-	$(CP) -r version.mk $(specfile) $(libname).in Makefile CONTRIBUTORS RPM-GPG-KEY-nicolaw LICENSE *.pod *.md debian/ examples/ tests/ $@/
+	$(CP) -r version.mk $(specfile) $(libname).in Makefile CONTRIBUTORS RPM-GPG-KEY-nicolaw LICENSE *.md debian/ examples/ tests/ $@/
 
 release:
 	mkdir $@
@@ -128,13 +129,16 @@ debian/changelog:
 #	$(CP) $< $@
 #	#$(srcdir)/gitversion.sh -d .git -p $(name) -S -l rpm >> $@
 
-$(manpage): $(libname).pod
-	$(POD2MAN) \
-		--name="$(shell echo $libname | tr A-Z a-z)" \
-		--release="$(libname) $(version)" \
-		--center="$(libname)" \
-		--section=3 \
-		--utf8 $< > $@
+$(manpage): $(libname).3.md
+	$(MD2MAN) -in $< -out $@
+
+#$(manpage): $(libname).pod
+#	$(POD2MAN) \
+#		--name="$(shell echo $libname | tr A-Z a-z)" \
+#		--release="$(libname) $(version)" \
+#		--center="$(libname)" \
+#		--section=3 \
+#		--utf8 $< > $@
 
 $(DISTDEBTAR): $(DISTTAR)
 	$(LN) -f $< $@
@@ -178,7 +182,7 @@ install:
 	$(INSTALL) -m 0644 $(libname) "$(DESTDIR)$(libdir)"
 	$(INSTALL) -m 0644 $(manpage) "$(DESTDIR)$(man3dir)"
 	$(INSTALL) -m 0644 README.* "$(DESTDIR)$(docsdir)"
-	$(INSTALL) -m 0644 *.pod "$(DESTDIR)$(docsdir)"
+	$(INSTALL) -m 0644 *.md "$(DESTDIR)$(docsdir)"
 	$(INSTALL) -m 0644 tests/* "$(DESTDIR)$(docsdir)/tests"
 	$(INSTALL) -m 0644 examples/* "$(DESTDIR)$(docsdir)/examples"
     
