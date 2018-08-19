@@ -235,7 +235,9 @@ not usually expected to be used directly. See *COMMAND LINE ARGUMENT PARSING*.
 
 # COMMAND LINE ARGUMENT PARSING
 
-See also [CMDARG.md](CMDARG.md)
+Documentation relating to command line argument parsing can be found in the
+`blip.bash(7)` man page. It can also be viewed online in the
+[CMDARG.md](CMDARG.md) file at
 [https://github.com/neechbear/blip/blob/master/CMDARG.md](https://github.com/neechbear/blip/blob/master/CMDARG.md).
 
 # VARIABLES
@@ -395,7 +397,7 @@ Nicola Worthington (nicola@tfb.net).
 
 # SEE ALSO
 
-/usr/share/doc/blip, bash(1).
+/usr/share/doc/blip, bash(1), blip.bash(7).
 
 # COPYRIGHT
 

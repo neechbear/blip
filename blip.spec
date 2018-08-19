@@ -30,6 +30,7 @@ make install DESTDIR="%{buildroot}" prefix=/usr
 %files
 /usr/lib/blip.bash
 /usr/share/man/man3/blip.bash.3.gz
+/usr/share/man/man7/blip.bash.7.gz
 %docdir /usr/share/doc/blip
 /usr/share/doc/blip
 

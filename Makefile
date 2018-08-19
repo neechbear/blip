@@ -6,7 +6,8 @@
 
 name := blip
 libname := $(name).bash
-manpage := $(libname).3
+manpages := $(libname).3 $(libname).7
+markdown := $(manpages:=.md)
 specfile := $(name).spec
 
 SHELL = /bin/sh
@@ -58,6 +59,7 @@ sharedir = $(prefix)/share
 docsdir = $(sharedir)/doc/blip
 mandir = $(sharedir)/man
 man3dir = $(mandir)/man3
+man7dir = $(mandir)/man7
 
 DISTTAR := $(name)-$(version)$(vcsdirty).tar.gz
 DISTRPM := $(name)-$(version)-$(release)$(vcsdirty).noarch.rpm
@@ -66,7 +68,7 @@ DISTRPM := $(name)-$(version)-$(release)$(vcsdirty).noarch.rpm
 DISTDEBTAR := $(name)_$(version).orig.tar.gz
 DISTDEB := $(name)_$(version)_all.deb
 
-TARGETS := $(libname) $(manpage) 
+TARGETS := $(libname) $(manpages) 
 
 all: $(TARGETS)
 
@@ -129,8 +131,14 @@ debian/changelog:
 #	$(CP) $< $@
 #	#$(srcdir)/gitversion.sh -d .git -p $(name) -S -l rpm >> $@
 
-$(manpage): $(libname).3.md
+$(libname).3: $(libname).3.md
 	$(MD2MAN) -in $< -out $@
+
+$(libname).7: CMDARG.md
+	$(MD2MAN) -in $< -out $@
+
+#$(manpages): %: %.md
+#	$(MD2MAN) -in $< -out $@
 
 #$(manpage): $(libname).pod
 #	$(POD2MAN) \
@@ -166,7 +174,7 @@ $(DISTRPM): $(specfile) $(DISTTAR)
 		--define "_build_name_fmt %%{NAME}-%%{VERSION}-%%{RELEASE}.%%{ARCH}.rpm"
 	rpm -qpil $@
 
-test: $(libname) $(manpage)
+test: $(libname) $(manpages)
 	@bash tests/tests.sh
 	@bash -c 'if type -P bash-4.4.0-1 ; then bash-4.4.0-1 tests/tests.sh ; fi'
 	@bash -c 'if type -P bash-4.3.0-1 ; then bash-4.3.0-1 tests/tests.sh ; fi'
@@ -177,10 +185,12 @@ test: $(libname) $(manpage)
 install:
 	$(INSTALL) -m 0755 -d "$(DESTDIR)$(libdir)"
 	$(INSTALL) -m 0755 -d "$(DESTDIR)$(man3dir)"
+	$(INSTALL) -m 0755 -d "$(DESTDIR)$(man7dir)"
 	$(INSTALL) -m 0755 -d "$(DESTDIR)$(docsdir)/tests"
 	$(INSTALL) -m 0755 -d "$(DESTDIR)$(docsdir)/examples"
 	$(INSTALL) -m 0644 $(libname) "$(DESTDIR)$(libdir)"
-	$(INSTALL) -m 0644 $(manpage) "$(DESTDIR)$(man3dir)"
+	$(INSTALL) -m 0644 *.3 "$(DESTDIR)$(man3dir)"
+	$(INSTALL) -m 0644 *.7 "$(DESTDIR)$(man7dir)"
 	$(INSTALL) -m 0644 README.* "$(DESTDIR)$(docsdir)"
 	$(INSTALL) -m 0644 *.md "$(DESTDIR)$(docsdir)"
 	$(INSTALL) -m 0644 tests/* "$(DESTDIR)$(docsdir)/tests"

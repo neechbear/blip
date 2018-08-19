@@ -1,3 +1,6 @@
+blip.bash 7 "August 2018" blip.bash "Command Line Argument Parsing"
+===================================================================
+
 # Command Line Argument Parsing
 
 Simple and convenient command line argument parsing library written entirly in,
@@ -253,10 +256,10 @@ While this is not:
 
 There is an exception to this form, and that is for hash arguments (e.g. 'x:{}').
 In this instance, the key for the argument (e.g. -x key=value) is to be
-considered a part of the value, and the user may want to validate this as well as
-the value. In this instance, when calling a validator against a hash argument,
-the validator will receive a second argument, which is the key of the hash being
-validated. For example:
+considered a part of the value, and the user may want to validate this as well
+as the value. In this instance, when calling a validator against a hash
+argument, the validator will receive a second argument, which is the key of the
+hash being validated. For example:
 
     # When we receive
     cmdarg 'x:{}' 'something' 'something' my_validator
@@ -278,15 +281,15 @@ when you pass them to `cmdarg_parse`.
 
 Any argument parsed that has a validator assigned, and whose validator returns
 nonzero, is considered a failure. Any REQUIRED argument that is not specified is
-considered a failure. However, it is worth noting that if a required argument has
-a default value, and you provide an empty value to it, we won't know any better
-and that will be accepted (how do we know you didn't actually *mean* to do
-that?).
+considered a failure. However, it is worth noting that if a required argument
+has a default value, and you provide an empty value to it, we won't know any
+better and that will be accepted (how do we know you didn't actually *mean* to
+do that?).
 
 For every argument integer, boolean or string argument, an associative array
 `cmdarg_cfg` is populated with the long version of the option. E.g., in the
-example above, `-c` would become `${cmdarg_cfg[groupmap]}`, for friendlier access
-during scripting.
+example above, `-c` would become `${cmdarg_cfg[groupmap]}`, for friendlier
+access during scripting.
 
     cmdarg 'x:' 'some required thing'
     cmdarg_parse "$@"
@@ -372,8 +375,8 @@ cmdarg_helpers hash, like this:
 The description helper is used when you are happy with the overall structure of
 how cmdarg prints your usage message (header, required, optional, footer), but
 you want to change the way that individual arguments are described. You can do
-this by setting `cmdarg_helpers['describe']` to the name of a bash function which
-accepts the following parameters (in order):
+this by setting `cmdarg_helpers['describe']` to the name of a bash function
+which accepts the following parameters (in order):
 
 - `$1` : long option to be described
 
@@ -396,31 +399,31 @@ accepts the following parameters (in order):
 
 This is every piece of information cmdarg keeps related to an argument (aside
 from its value). You can use these to describe the argument however you please.
-Your function must print the text description to stdout. The return value of your
-function is ignored.
+Your function must print the text description to stdout. The return value of
+your function is ignored.
 
 For examples of this behavior, see `examples/` and `tests/`.
 
 ## Usage Helper
 
 The usage helper is used when you want to completely override cmdarg's built in
-`--help` handler. Note that, when you override the usage helper, you will no longer
-benefit from the description helper, since that is called from inside of the
-default usage handler. If you override the usage helper, you will have to
+`--help` handler. Note that, when you override the usage helper, you will no
+longer benefit from the description helper, since that is called from inside of
+the default usage handler. If you override the usage helper, you will have to
 implement 100% of `--help` functionality on your own.
 
 The short options for all specified arguments in cmdarg are kept in a hash
 `${CMDARG}` which maps short arguments (`-x`) to long arguments
-(`--long-version-of-x`). However, it is not recommended that you iterate over this
-hash directly, as the order of hash key iteration is not guaranteed, so your
-`--help` message will change every time. To help with this, cmdarg populates two
-one-dimensional arrays, `CMDARG_OPTIONAL` and `CMDARG_REQUIRED` with the short
-options of all optional and require arguments, respectively. It is recommended
-that you iterate over these arrays instead of CMDARG to ensure an ordered
-output. It is further recommended that you still utilize cmdarg_describe to
-describe each individual argument, since this abstracts away the logic of how to
-get the flags, the type, etc of the argument, and lets you continue to provide a
-standard interface for your API developer(s).
+(`--long-version-of-x`). However, it is not recommended that you iterate over
+this hash directly, as the order of hash key iteration is not guaranteed, so
+your `--help` message will change every time. To help with this, cmdarg
+populates two one-dimensional arrays, `CMDARG_OPTIONAL` and `CMDARG_REQUIRED`
+with the short options of all optional and require arguments, respectively. It
+is recommended that you iterate over these arrays instead of CMDARG to ensure an
+ordered output. It is further recommended that you still utilize cmdarg_describe
+to describe each individual argument, since this abstracts away the logic of how
+to get the flags, the type, etc of the argument, and lets you continue to
+provide a standard interface for your API developer(s).
 
 For examples of this behavior, see `examples/` and `tests/`.
 

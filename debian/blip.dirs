@@ -1,5 +1,6 @@
 usr/lib
 usr/share/man/man3
+usr/share/man/man7
 usr/share/doc/blip
 usr/share/doc/blip/examples
 usr/share/doc/blip/tests
